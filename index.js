@@ -139,7 +139,7 @@ async function create(vm, wit) {
 		{
 			op: "add",
 			path: "/fields/System.Tags",
-			value: vm.env.tags,
+			value: vm.env.tags + "; " + vm.repository,
 		},
 		{
 			op: "add",
@@ -435,7 +435,7 @@ async function find(vm) {
 		query:
 			"SELECT [System.Id], [System.WorkItemType], [System.Description], [System.Title], [System.AssignedTo], [System.State], [System.Tags] FROM workitems WHERE [System.TeamProject] = @project AND [System.Title] CONTAINS '[GitHub #" +
 			vm.number +
-			")' AND [System.Tags] CONTAINS 'GitHub Issue' AND [System.Tags] CONTAINS '" +
+			"]' AND [System.Tags] CONTAINS '" +
 			vm.repository +
 			"'",
 	};

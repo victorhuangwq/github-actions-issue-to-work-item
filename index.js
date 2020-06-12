@@ -132,8 +132,8 @@ async function create(vm, wit) {
 		},
 		{
 			op: "add",
-			path: "/fields/System.Description",
-			// TODO: Use repro steps, not description
+			//path: "/fields/System.Description",
+			path: "Microsoft.VSTS.TCM.ReproSteps",
 			value: vm.body,
 		},
 		{

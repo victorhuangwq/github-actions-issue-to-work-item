@@ -62,13 +62,6 @@ async function main() {
 			}
 		}
 
-		
-	let authHandler = azdev.getPersonalAccessTokenHandler(vm.env.adoToken);
-	let connection = new azdev.WebApi(vm.env.orgUrl, authHandler);
-	let client = await connection.getWorkItemTrackingApi();
-	var reproworkItem = await client.getWorkItem(26923440);
-	console.log(reproworkItem);
-
 		// create right patch document depending on the action tied to the issue
 		// update the work item
 		console.log("Performing action for event=" + vm.action);
@@ -140,7 +133,7 @@ async function create(vm, wit) {
 		{
 			op: "add",
 			//path: "/fields/System.Description",
-			path: "/fields/Microsoft.VSTS.Common.ReproSteps",
+			path: "/fields/Microsoft.VSTS.TCM.ReproSteps",
 			value: vm.body,
 		},
 		{

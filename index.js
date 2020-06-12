@@ -133,7 +133,7 @@ async function create(vm, wit) {
 		{
 			op: "add",
 			//path: "/fields/System.Description",
-			path: "Microsoft.VSTS.TCM.ReproSteps",
+			path: "Microsoft.VSTS.Common.ReproSteps",
 			value: vm.body,
 		},
 		{

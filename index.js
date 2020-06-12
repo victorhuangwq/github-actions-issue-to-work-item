@@ -132,7 +132,7 @@ async function create(vm, wit) {
 		vm.repo_url +
 		'" target="_new">' +
 		vm.repo_fullname +
-		" project</a></br>";
+		"</a>  project</br></br></br>";
 
 	let patchDocument = [
 		{
@@ -144,7 +144,7 @@ async function create(vm, wit) {
 			op: "add",
 			//path: "/fields/System.Description",
 			path: "/fields/Microsoft.VSTS.TCM.ReproSteps",
-			value: botMessage + vm.body,
+			value: botMessage + '<b>Description: </b>' + vm.body,
 		},
 		{
 			op: "add",

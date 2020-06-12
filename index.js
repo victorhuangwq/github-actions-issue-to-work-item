@@ -124,7 +124,7 @@ function formatTitle(vm) {
 
 // create Work Item via https://docs.microsoft.com/en-us/rest/api/azure/devops/
 async function create(vm, wit) {
-	let botMessage = 'This bug was auto-opened from GitHub <a href="' +
+	let botMessage = 'This item was auto-opened from GitHub <a href="' +
 		vm.url +
 		'" target="_new">issue #' +
 		vm.number +
@@ -132,7 +132,8 @@ async function create(vm, wit) {
 		vm.repo_url +
 		'" target="_new">' +
 		vm.repo_fullname +
-		"</a>  project</br></br></br>";
+		"</a>  project</br></br><b>Description from GitHub: </b></br>" + 
+		vm.body;
 
 	let patchDocument = [
 		{
@@ -142,9 +143,13 @@ async function create(vm, wit) {
 		},
 		{
 			op: "add",
-			//path: "/fields/System.Description",
+			path: "/fields/System.Description",
+			value: botMessage,
+		},
+		{
+			op: "add",
 			path: "/fields/Microsoft.VSTS.TCM.ReproSteps",
-			value: botMessage + '<b>Description: </b>' + vm.body,
+			value: botMessage,
 		},
 		{
 			op: "add",

@@ -124,6 +124,17 @@ function formatTitle(vm) {
 
 // create Work Item via https://docs.microsoft.com/en-us/rest/api/azure/devops/
 async function create(vm, wit) {
+	let botMessage = 'This item was auto-opened from GitHub <a href="' +
+		vm.url +
+		'" target="_new">issue #' +
+		vm.number +
+		'</a> created in the <a href="' +
+		vm.repo_url +
+		'" target="_new">' +
+		vm.repo_fullname +
+		"</a>  project</br></br><b>Description from GitHub: </b></br>" + 
+		vm.body;
+
 	let patchDocument = [
 		{
 			op: "add",
@@ -133,13 +144,17 @@ async function create(vm, wit) {
 		{
 			op: "add",
 			path: "/fields/System.Description",
-			// TODO: Use repro steps, not description
-			value: vm.body,
+			value: botMessage,
+		},
+		{
+			op: "add",
+			path: "/fields/Microsoft.VSTS.TCM.ReproSteps",
+			value: botMessage,
 		},
 		{
 			op: "add",
 			path: "/fields/System.Tags",
-			value: vm.env.tags,
+			value: vm.env.tags + "; " + vm.repository,
 		},
 		{
 			op: "add",
@@ -435,7 +450,7 @@ async function find(vm) {
 		query:
 			"SELECT [System.Id], [System.WorkItemType], [System.Description], [System.Title], [System.AssignedTo], [System.State], [System.Tags] FROM workitems WHERE [System.TeamProject] = @project AND [System.Title] CONTAINS '[GitHub #" +
 			vm.number +
-			")' AND [System.Tags] CONTAINS 'GitHub Issue' AND [System.Tags] CONTAINS '" +
+			"]' AND [System.Tags] CONTAINS '" +
 			vm.repository +
 			"'",
 	};

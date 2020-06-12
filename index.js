@@ -46,27 +46,30 @@ async function main() {
 		}
 
 		// if a work item was not found, go create one
-		if (workItem === null) {
-			console.log("No work item found, creating work item from issue");
-			workItem = await create(vm);
+		if (!vm.env.createOnTagging) {
+			if (workItem === null) {
+				console.log("No work item found, creating work item from issue");
+				workItem = await create(vm, vm.env.wit);
 
-			// if workItem == -1 then we have an error during create
-			if (workItem === -1) {
-				core.setFailed();
-				return;
+				// if workItem == -1 then we have an error during create
+				if (workItem === -1) {
+					core.setFailed();
+					return;
+				}
+
+			} else {
+				console.log(`Existing work item found: ${workItem.id}`);
 			}
-
-			// link the issue to the work item via AB# syntax with AzureBoards+GitHub App
-			issue = vm.env.ghToken != "" ? await updateIssueBody(vm, workItem) : "";
-		} else {
-			console.log(`Existing work item found: ${workItem.id}`);
 		}
 
 		// create right patch document depending on the action tied to the issue
 		// update the work item
+		console.log("Performing action for event=" + vm.action);
 		switch (vm.action) {
 			case "opened":
-				workItem === null ? await create(vm) : "";
+				if (!vm.env.createOnTagging && workItem === null) {
+					workItem === null ? await create(vm, vm.env.wit) : "";
+				}
 				break;
 			case "edited":
 				workItem != null ? await update(vm, workItem) : "";
@@ -84,10 +87,16 @@ async function main() {
 				console.log("assigned action is not yet implemented");
 				break;
 			case "labeled":
-				workItem != null ? await label(vm, workItem) : "";
+				if (vm.env.createOnTagging && workItem === null) {
+					workItem = await createForLabel(vm);
+				} else if (vm.env.setLabelsAsTags) {
+					workItem != null ? await label(vm, workItem) : "";
+				}
 				break;
 			case "unlabeled":
-				workItem != null ? await unlabel(vm, workItem) : "";
+				if (vm.env.setLabelsAsTags) {
+					workItem != null ? await unlabel(vm, workItem) : "";
+				}
 				break;
 			case "deleted":
 				console.log("deleted action is not yet implemented");
@@ -109,23 +118,28 @@ async function main() {
 	}
 }
 
+function formatTitle(vm) {
+	return "[GitHub #" + vm.number + "] " + vm.title;
+}
+
 // create Work Item via https://docs.microsoft.com/en-us/rest/api/azure/devops/
-async function create(vm) {
+async function create(vm, wit) {
 	let patchDocument = [
 		{
 			op: "add",
 			path: "/fields/System.Title",
-			value: vm.title + " (GitHub Issue #" + vm.number + ")",
+			value: formatTitle(vm),
 		},
 		{
 			op: "add",
 			path: "/fields/System.Description",
+			// TODO: Use repro steps, not description
 			value: vm.body,
 		},
 		{
 			op: "add",
 			path: "/fields/System.Tags",
-			value: "GitHub Issue; " + vm.repo_name,
+			value: vm.env.tags,
 		},
 		{
 			op: "add",
@@ -170,7 +184,7 @@ async function create(vm) {
 			(customHeaders = []),
 			(document = patchDocument),
 			(project = vm.env.project),
-			(type = vm.env.wit),
+			(type = wit),
 			(validateOnly = false),
 			(bypassRules = vm.env.bypassRules)
 		);
@@ -180,11 +194,11 @@ async function create(vm) {
 			workItemSaveResult = -1;
 
 			console.log("Error: creatWorkItem failed");
-			console.log(`WIT may not be correct: ${vm.env.wit}`);
+			console.log(`WIT may not be correct: ${wit}`);
 			core.setFailed();
+		} else {
+			console.log("Work item successfully created");
 		}
-
-		return workItemSaveResult;
 	} catch (error) {
 		workItemSaveResult = -1;
 
@@ -194,7 +208,34 @@ async function create(vm) {
 		core.setFailed(error);
 	}
 
+	if (workItemSaveResult != -1) {
+		console.log(workItemSaveResult);
+		// link the issue to the work item via AB# syntax with AzureBoards+GitHub App
+		issue = vm.env.ghToken != "" ? await updateIssueBody(vm, workItemSaveResult) : "";
+	}
+
 	return workItemSaveResult;
+}
+
+// create a work item for the new label
+async function createForLabel(vm) {
+	console.log("Creating for label=" + vm.label);
+	if (vm.env.createOnTagging) {
+		var wit = "";
+		switch (vm.label) {
+			case "bug":
+				wit = "Bug";
+				break;
+			case "feature request":
+				wit = "Scenario"
+				break;
+			default:
+				return null;
+		}
+		var workItem = await create(vm, wit);
+		console.log("Work item created for label=" + vm.label);
+		return workItem;
+	}
 }
 
 // update existing working item
@@ -203,12 +244,12 @@ async function update(vm, workItem) {
 
 	if (
 		workItem.fields["System.Title"] !=
-		`${vm.title} (GitHub Issue #${vm.number})`
+		`[GitHub #${vm.number}] ${vm.title}`
 	) {
 		patchDocument.push({
 			op: "add",
 			path: "/fields/System.Title",
-			value: vm.title + " (GitHub Issue #" + vm.number + ")",
+			value: formatTitle(vm),
 		});
 	}
 
@@ -254,10 +295,24 @@ async function comment(vm, workItem) {
 async function close(vm, workItem) {
 	let patchDocument = [];
 
+	var closedState = vm.env.closedState;
+	// TODO: Move into main.yml settings
+	// switch (workItem.workItemType) {
+	// 	case "Bug":
+	// 		closedState = "Closed";
+	// 		break;
+	// 	case "Task":
+	// 	case "Deliverable":
+	// 	case "Scenario":
+	// 	case "Epic":
+	// 		closedState = "Completed";
+	// 		break;
+	// }
+
 	patchDocument.push({
 		op: "add",
 		path: "/fields/System.State",
-		value: vm.env.closedState,
+		value: closedState,
 	});
 
 	if (vm.comment_text != "") {
@@ -378,7 +433,7 @@ async function find(vm) {
 
 	let wiql = {
 		query:
-			"SELECT [System.Id], [System.WorkItemType], [System.Description], [System.Title], [System.AssignedTo], [System.State], [System.Tags] FROM workitems WHERE [System.TeamProject] = @project AND [System.Title] CONTAINS '(GitHub Issue #" +
+			"SELECT [System.Id], [System.WorkItemType], [System.Description], [System.Title], [System.AssignedTo], [System.State], [System.Tags] FROM workitems WHERE [System.TeamProject] = @project AND [System.Title] CONTAINS '[GitHub #" +
 			vm.number +
 			")' AND [System.Tags] CONTAINS 'GitHub Issue' AND [System.Tags] CONTAINS '" +
 			vm.repository +
@@ -445,20 +500,27 @@ async function updateWorkItem(patchDocument, id, env) {
 // update the GH issue body to include the AB# so that we link the Work Item to the Issue
 // this should only get called when the issue is created
 async function updateIssueBody(vm, workItem) {
-	var n = vm.body.includes("AB#" + workItem.id.toString());
+	var hasLink = vm.body.includes("AB#" + workItem.id);
 
-	if (!n) {
+	if (!hasLink) {
 		const octokit = new github.GitHub(vm.env.ghToken);
-		vm.body = vm.body + "\r\n\r\nAB#" + workItem.id.toString();
+		vm.body = vm.body + "\r\n\r\nAB#" + workItem.id;
 
-		var result = await octokit.issues.update({
-			owner: vm.owner,
-			repo: vm.repository,
-			issue_number: vm.number,
-			body: vm.body,
-		});
+		console.log("Attempting update");
+		try {
+			console.log(vm);
+			var result = await octokit.issues.update({
+				owner: vm.owner,
+				repo: vm.repository,
+				issue_number: vm.number,
+				body: vm.body,
+			});
 
-		return result;
+			return result;
+		} catch (error) {
+			console.log("Error: failed to update issue");
+			core.setFailed(error);
+		}
 	}
 
 	return null;
@@ -492,10 +554,13 @@ function getValuesFromPayload(payload, env) {
 			ghToken: env.github_token != undefined ? env.github_token : "",
 			project: env.ado_project != undefined ? env.ado_project : "",
 			areaPath: env.ado_area_path != undefined ? env.ado_area_path : "",
-			wit: env.ado_wit != undefined ? env.ado_wit : "Issue",
+			wit: env.ado_wit != undefined ? env.ado_wit : "Bug",
+			tags: env.ado_tags != undefined ? env.ado_tags : "",
+			setLabelsAsTags: env.ado_set_labels != undefined ? env.ado_set_labels : true,
 			closedState: env.ado_close_state != undefined ? env.ado_close_state : "Closed",
-			newState: env.ado_new_state != undefined ? env.ado_new_State : "New",
-			bypassRules: env.ado_bypassrules != undefined ? env.ado_bypassrules : false
+			newState: env.ado_new_state != undefined ? env.ado_new_State : "Active",
+			bypassRules: env.ado_bypassrules != undefined ? env.ado_bypassrules : false,
+			createOnTagging: env.create_on_tagging != undefined ? env.create_on_tagging : false
 		}
 	};
 

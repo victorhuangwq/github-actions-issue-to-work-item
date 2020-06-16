@@ -310,57 +310,69 @@ async function comment(vm, workItem) {
 async function close(vm, workItem) {
 	let patchDocument = [];
 
-	var closedState = vm.env.closedState;
-	// TODO: Move into main.yml settings
-	// switch (workItem.workItemType) {
-	// 	case "Bug":
-	// 		closedState = "Closed";
-	// 		break;
-	// 	case "Task":
-	// 	case "Deliverable":
-	// 	case "Scenario":
-	// 	case "Epic":
-	// 		closedState = "Completed";
-	// 		break;
-	// }
-
-	patchDocument.push({
-		op: "add",
-		path: "/fields/System.State",
-		value: closedState,
-	});
-
-	if (vm.comment_text != "") {
-		patchDocument.push({
-			op: "add",
-			path: "/fields/System.History",
-			value:
-				'<a href="' +
-				vm.comment_url +
-				'" target="_new">GitHub Comment Added</a></br></br>' +
-				vm.comment_text,
-		});
-	}
-
-	if (vm.closed_at != "") {
-		patchDocument.push({
-			op: "add",
-			path: "/fields/System.History",
-			value:
-				'GitHub <a href="' +
-				vm.url +
-				'" target="_new">issue #' +
-				vm.number +
-				"</a> was closed on " +
-				vm.closed_at,
-		});
-	}
-
-	if (patchDocument.length > 0) {
-		return await updateWorkItem(patchDocument, workItem.id, vm.env);
+	// If tagOnClose is set, just tag the related ADO item instead of closing it.
+	if (vm.env.tagOnClose) {
+		if (!workItem.fields["System.Tags"].includes(vm.env.tagOnClose)) {
+			patchDocument.push({
+				op: "add",
+				path: "/fields/System.Tags",
+				value: workItem.fields["System.Tags"] + ", " + vm.env.tagOnClose,
+			});
+		}
 	} else {
-		return null;
+		var closedState = vm.env.closedState;
+		// TODO: Move into main.yml settings
+		// switch (workItem.workItemType) {
+		// 	case "Bug":
+		// 		closedState = "Closed";
+		// 		break;
+		// 	case "Task":
+		// 	case "Deliverable":
+		// 	case "Scenario":
+		// 	case "Epic":
+		// 		closedState = "Completed";
+		// 		break;
+		// }
+
+		patchDocument.push({
+			op: "add",
+			path: "/fields/System.State",
+			value: closedState,
+		});
+
+		if (vm.comment_text != "") {
+			patchDocument.push({
+				op: "add",
+				path: "/fields/System.History",
+				value:
+					'<a href="' +
+					vm.comment_url +
+					'" target="_new">GitHub Comment Added</a></br></br>' +
+					vm.comment_text,
+			});
+		}
+
+		if (vm.closed_at != "") {
+			patchDocument.push({
+				op: "add",
+				path: "/fields/System.History",
+				value:
+					'GitHub <a href="' +
+					vm.url +
+					'" target="_new">issue #' +
+					vm.number +
+					"</a> was closed on " +
+					vm.closed_at,
+			});
+		}
+
+		if (patchDocument.length > 0) {
+			return await updateWorkItem(patchDocument, workItem.id, vm.env);
+		} else {
+			return null;
+		}
 	}
+
 }
 
 // reopen existing work item
@@ -575,7 +587,8 @@ function getValuesFromPayload(payload, env) {
 			closedState: env.ado_close_state != undefined ? env.ado_close_state : "Closed",
 			newState: env.ado_new_state != undefined ? env.ado_new_State : "Active",
 			bypassRules: env.ado_bypassrules != undefined ? env.ado_bypassrules : false,
-			createOnTagging: env.create_on_tagging != undefined ? env.create_on_tagging : false
+			createOnTagging: env.create_on_tagging != undefined ? env.create_on_tagging : false,
+			tagOnClose: env.ado_tag_on_close != undefined ? env.ado_tag_on_close : ""
 		}
 	};
 

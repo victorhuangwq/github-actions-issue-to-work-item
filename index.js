@@ -42,7 +42,7 @@ async function main() {
 		if (workItem === null) {
 			console.log("Could not find existing ADO workitem");
 		} else {
-			console.log("Found existing ADO workitem: " + workitem.id);
+			console.log("Found existing ADO workitem: " + workItem.id);
 		}
 		
 		let issue = "";

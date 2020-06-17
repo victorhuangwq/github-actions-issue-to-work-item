@@ -322,6 +322,7 @@ async function comment(vm, workItem) {
 
 async function tag(vm, workItem, newTag) {
 	if (!workItem.fields["System.Tags"].includes(newTag)) {
+		let patchDocument = [];
 		patchDocument.push({
 			op: "add",
 			path: "/fields/System.Tags",

@@ -42,7 +42,7 @@ async function main() {
 		if (workItem === null) {
 			console.log("Could not find existing ADO workitem");
 		} else {
-			console.log("Found existing ADO workitem: " + workitem);
+			console.log("Found existing ADO workitem: " + workitem.id);
 		}
 		
 		let issue = "";
@@ -127,7 +127,8 @@ async function main() {
 			core.setOutput(`id`, `${workItem.id}`);
 		}
 	} catch (error) {
-		core.setFailed(error);
+		console.log("Error: " + error);
+		core.setFailed();
 	}
 }
 
@@ -504,7 +505,7 @@ async function find(vm) {
 	if (workItem != null) {
 		try {
 			var result = await client.getWorkItem(workItem.id, null, null, 4);
-			console.log("Workitem data retrieved");
+			console.log("Workitem data retrieved: " + workItem.id);
 			return result;
 		} catch (error) {
 			console.log("Error: getWorkItem failure");

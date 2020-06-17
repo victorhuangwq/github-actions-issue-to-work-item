@@ -31,12 +31,20 @@ async function main() {
 			vm = getValuesFromPayload(github.context.payload, env);
 		}
 
+		console.log("Context: " + vm);
+
 		// todo: validate we have all the right inputs
 
 		// go check to see if work item already exists in azure devops or not
 		// based on the title and tags
 		console.log("Check to see if work item already exists");
 		let workItem = await find(vm);
+		if (workItem === null) {
+			console.log("Could not find existing ADO workitem");
+		} else {
+			console.log("Found existing ADO workitem: " + workItem.id);
+		}
+		
 		let issue = "";
 
 		// if workItem == -1 then we have an error during find
@@ -45,7 +53,8 @@ async function main() {
 			return;
 		}
 
-		// if a work item was not found, go create one
+		// if a work item was not found, go create one, unless we are only creating
+		// items when tagged.
 		if (!vm.env.createOnTagging) {
 			if (workItem === null) {
 				console.log("No work item found, creating work item from issue");
@@ -64,7 +73,7 @@ async function main() {
 
 		// create right patch document depending on the action tied to the issue
 		// update the work item
-		console.log("Performing action for event=" + vm.action);
+		console.log("Performing action for event: " + vm.action);
 		switch (vm.action) {
 			case "opened":
 				if (!vm.env.createOnTagging && workItem === null) {
@@ -78,7 +87,11 @@ async function main() {
 				workItem != null ? await comment(vm, workItem) : "";
 				break;
 			case "closed":
-				workItem != null ? await close(vm, workItem) : "";
+				if (vm.env.tagOnClose) {
+					workItem != null ? await tag(vm, workItem, vm.env.tagOnClose) : "";
+				} else {
+					workItem != null ? await close(vm, workItem) : "";
+				}
 				break;
 			case "reopened":
 				workItem != null ? await reopen(vm, workItem) : "";
@@ -114,7 +127,8 @@ async function main() {
 			core.setOutput(`id`, `${workItem.id}`);
 		}
 	} catch (error) {
-		core.setFailed(error);
+		console.log("Error: " + error);
+		core.setFailed();
 	}
 }
 
@@ -306,6 +320,21 @@ async function comment(vm, workItem) {
 	}
 }
 
+async function tag(vm, workItem, newTag) {
+	if (!workItem.fields["System.Tags"].includes(newTag)) {
+		let patchDocument = [];
+		patchDocument.push({
+			op: "add",
+			path: "/fields/System.Tags",
+			value: workItem.fields["System.Tags"] + ", " + newTag,
+		});
+		console.log("Tagging item with: " + newTag);
+		return await updateWorkItem(patchDocument, workItem.id, vm.env);
+	} else {
+		return null;
+	}
+}
+
 // close work item
 async function close(vm, workItem) {
 	let patchDocument = [];
@@ -434,6 +463,7 @@ async function find(vm) {
 	let workItem = null;
 	let queryResult = null;
 
+	console.log("Finding workitem");
 	try {
 		client = await connection.getWorkItemTrackingApi();
 	} catch (error) {
@@ -448,12 +478,11 @@ async function find(vm) {
 
 	let wiql = {
 		query:
-			"SELECT [System.Id], [System.WorkItemType], [System.Description], [System.Title], [System.AssignedTo], [System.State], [System.Tags] FROM workitems WHERE [System.TeamProject] = @project AND [System.Title] CONTAINS '[GitHub #" +
-			vm.number +
-			"]' AND [System.Tags] CONTAINS '" +
-			vm.repository +
-			"'",
+			"SELECT [System.Id], [System.WorkItemType], [System.Description], [System.Title], [System.AssignedTo], [System.State], [System.Tags] " +
+			"FROM workitems " +
+			"WHERE [System.TeamProject] = @project AND [System.Title] CONTAINS '[GitHub #"+vm.number+"]'",
 	};
+	console.log("ADO query: " + wiql.query);
 
 	try {
 		queryResult = await client.queryByWiql(wiql, teamContext);
@@ -471,11 +500,13 @@ async function find(vm) {
 		return -1;
 	}
 
+	console.log("Use the first item found");
 	workItem = queryResult.workItems.length > 0 ? queryResult.workItems[0] : null;
 
 	if (workItem != null) {
 		try {
 			var result = await client.getWorkItem(workItem.id, null, null, 4);
+			console.log("Workitem data retrieved: " + workItem.id);
 			return result;
 		} catch (error) {
 			console.log("Error: getWorkItem failure");
@@ -575,7 +606,8 @@ function getValuesFromPayload(payload, env) {
 			closedState: env.ado_close_state != undefined ? env.ado_close_state : "Closed",
 			newState: env.ado_new_state != undefined ? env.ado_new_State : "Active",
 			bypassRules: env.ado_bypassrules != undefined ? env.ado_bypassrules : false,
-			createOnTagging: env.create_on_tagging != undefined ? env.create_on_tagging : false
+			createOnTagging: env.create_on_tagging != undefined ? env.create_on_tagging : false,
+			tagOnClose: env.ado_tag_on_close != undefined ? env.ado_tag_on_close : ""
 		}
 	};
 

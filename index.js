@@ -78,7 +78,11 @@ async function main() {
 				workItem != null ? await comment(vm, workItem) : "";
 				break;
 			case "closed":
-				workItem != null ? await close(vm, workItem) : "";
+				if (vm.env.tagOnClose && workItem != null) {
+					await tag(vm, workItem, vm.env.tagOnClose);
+				} else {
+					workItem != null ? await close(vm, workItem) : "";
+				}
 				break;
 			case "reopened":
 				workItem != null ? await reopen(vm, workItem) : "";
@@ -306,73 +310,74 @@ async function comment(vm, workItem) {
 	}
 }
 
+async function tag(vm, workItem, newTag) {
+	if (!workItem.fields["System.Tags"].includes(newTag)) {
+		patchDocument.push({
+			op: "add",
+			path: "/fields/System.Tags",
+			value: workItem.fields["System.Tags"] + ", " + newTag,
+		});
+		return await updateWorkItem(patchDocument, workItem.id, vm.env);
+	} else {
+		return null;
+	}
+}
+
 // close work item
 async function close(vm, workItem) {
 	let patchDocument = [];
 
-	// If tagOnClose is set, just tag the related ADO item instead of closing it.
-	if (vm.env.tagOnClose) {
-		if (!workItem.fields["System.Tags"].includes(vm.env.tagOnClose)) {
-			patchDocument.push({
-				op: "add",
-				path: "/fields/System.Tags",
-				value: workItem.fields["System.Tags"] + ", " + vm.env.tagOnClose,
-			});
-		}
-	} else {
-		var closedState = vm.env.closedState;
-		// TODO: Move into main.yml settings
-		// switch (workItem.workItemType) {
-		// 	case "Bug":
-		// 		closedState = "Closed";
-		// 		break;
-		// 	case "Task":
-		// 	case "Deliverable":
-		// 	case "Scenario":
-		// 	case "Epic":
-		// 		closedState = "Completed";
-		// 		break;
-		// }
+	var closedState = vm.env.closedState;
+	// TODO: Move into main.yml settings
+	// switch (workItem.workItemType) {
+	// 	case "Bug":
+	// 		closedState = "Closed";
+	// 		break;
+	// 	case "Task":
+	// 	case "Deliverable":
+	// 	case "Scenario":
+	// 	case "Epic":
+	// 		closedState = "Completed";
+	// 		break;
+	// }
 
+	patchDocument.push({
+		op: "add",
+		path: "/fields/System.State",
+		value: closedState,
+	});
+
+	if (vm.comment_text != "") {
 		patchDocument.push({
 			op: "add",
-			path: "/fields/System.State",
-			value: closedState,
+			path: "/fields/System.History",
+			value:
+				'<a href="' +
+				vm.comment_url +
+				'" target="_new">GitHub Comment Added</a></br></br>' +
+				vm.comment_text,
 		});
-
-		if (vm.comment_text != "") {
-			patchDocument.push({
-				op: "add",
-				path: "/fields/System.History",
-				value:
-					'<a href="' +
-					vm.comment_url +
-					'" target="_new">GitHub Comment Added</a></br></br>' +
-					vm.comment_text,
-			});
-		}
-
-		if (vm.closed_at != "") {
-			patchDocument.push({
-				op: "add",
-				path: "/fields/System.History",
-				value:
-					'GitHub <a href="' +
-					vm.url +
-					'" target="_new">issue #' +
-					vm.number +
-					"</a> was closed on " +
-					vm.closed_at,
-			});
-		}
-
-		if (patchDocument.length > 0) {
-			return await updateWorkItem(patchDocument, workItem.id, vm.env);
-		} else {
-			return null;
-		}
 	}
 
+	if (vm.closed_at != "") {
+		patchDocument.push({
+			op: "add",
+			path: "/fields/System.History",
+			value:
+				'GitHub <a href="' +
+				vm.url +
+				'" target="_new">issue #' +
+				vm.number +
+				"</a> was closed on " +
+				vm.closed_at,
+		});
+	}
+
+	if (patchDocument.length > 0) {
+		return await updateWorkItem(patchDocument, workItem.id, vm.env);
+	} else {
+		return null;
+	}
 }
 
 // reopen existing work item

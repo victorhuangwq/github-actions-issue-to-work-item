@@ -37,6 +37,12 @@ async function main() {
 		// based on the title and tags
 		console.log("Check to see if work item already exists");
 		let workItem = await find(vm);
+		if (workItem === null) {
+			console.log("Could not find existing ADO workitem");
+		} else {
+			console.log("Found existing ADO workitem: " + workitem);
+		}
+		
 		let issue = "";
 
 		// if workItem == -1 then we have an error during find
@@ -45,7 +51,8 @@ async function main() {
 			return;
 		}
 
-		// if a work item was not found, go create one
+		// if a work item was not found, go create one, unless we are only creating
+		// items when tagged.
 		if (!vm.env.createOnTagging) {
 			if (workItem === null) {
 				console.log("No work item found, creating work item from issue");
@@ -468,9 +475,7 @@ async function find(vm) {
 		query:
 			"SELECT [System.Id], [System.WorkItemType], [System.Description], [System.Title], [System.AssignedTo], [System.State], [System.Tags] FROM workitems WHERE [System.TeamProject] = @project AND [System.Title] CONTAINS '[GitHub #" +
 			vm.number +
-			"]' AND [System.Tags] CONTAINS '" +
-			vm.repository +
-			"'",
+			"]'",
 	};
 
 	try {

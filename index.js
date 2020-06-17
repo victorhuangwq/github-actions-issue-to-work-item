@@ -31,6 +31,8 @@ async function main() {
 			vm = getValuesFromPayload(github.context.payload, env);
 		}
 
+		console.log("Context: " + vm);
+
 		// todo: validate we have all the right inputs
 
 		// go check to see if work item already exists in azure devops or not
@@ -71,7 +73,7 @@ async function main() {
 
 		// create right patch document depending on the action tied to the issue
 		// update the work item
-		console.log("Performing action for event=" + vm.action);
+		console.log("Performing action for event: " + vm.action);
 		switch (vm.action) {
 			case "opened":
 				if (!vm.env.createOnTagging && workItem === null) {

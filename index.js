@@ -461,6 +461,7 @@ async function find(vm) {
 	let workItem = null;
 	let queryResult = null;
 
+	console.log("Finding workitem");
 	try {
 		client = await connection.getWorkItemTrackingApi();
 	} catch (error) {
@@ -475,10 +476,11 @@ async function find(vm) {
 
 	let wiql = {
 		query:
-			"SELECT [System.Id], [System.WorkItemType], [System.Description], [System.Title], [System.AssignedTo], [System.State], [System.Tags] FROM workitems WHERE [System.TeamProject] = @project AND [System.Title] CONTAINS '[GitHub #" +
-			vm.number +
-			"]'",
+			"SELECT [System.Id], [System.WorkItemType], [System.Description], [System.Title], [System.AssignedTo], [System.State], [System.Tags] " +
+			"FROM workitems " +
+			"WHERE [System.TeamProject] = @project AND [System.Title] CONTAINS '[GitHub #"+vm.number+"]'",
 	};
+	console.log("ADO query: " + wiql.query);
 
 	try {
 		queryResult = await client.queryByWiql(wiql, teamContext);
@@ -496,11 +498,13 @@ async function find(vm) {
 		return -1;
 	}
 
+	console.log("Use the first item found");
 	workItem = queryResult.workItems.length > 0 ? queryResult.workItems[0] : null;
 
 	if (workItem != null) {
 		try {
 			var result = await client.getWorkItem(workItem.id, null, null, 4);
+			console.log("Workitem data retrieved");
 			return result;
 		} catch (error) {
 			console.log("Error: getWorkItem failure");

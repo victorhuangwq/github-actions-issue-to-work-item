@@ -78,8 +78,8 @@ async function main() {
 				workItem != null ? await comment(vm, workItem) : "";
 				break;
 			case "closed":
-				if (vm.env.tagOnClose && workItem != null) {
-					await tag(vm, workItem, vm.env.tagOnClose);
+				if (vm.env.tagOnClose) {
+					workItem != null ? await tag(vm, workItem, vm.env.tagOnClose) : "";
 				} else {
 					workItem != null ? await close(vm, workItem) : "";
 				}
@@ -317,6 +317,7 @@ async function tag(vm, workItem, newTag) {
 			path: "/fields/System.Tags",
 			value: workItem.fields["System.Tags"] + ", " + newTag,
 		});
+		console.log("Tagging item with: " + newTag);
 		return await updateWorkItem(patchDocument, workItem.id, vm.env);
 	} else {
 		return null;

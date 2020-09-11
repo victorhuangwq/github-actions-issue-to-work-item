@@ -56,7 +56,7 @@ async function main() {
 
 		// if a work item was not found, go create one, unless we are only creating
 		// items when tagged.
-		if (!vm.env.createOnTagging) {
+		if (!vm.env.createOnTag) {
 			if (workItem === null) {
 				console.log("No work item found, creating work item from issue");
 				workItem = await create(vm, vm.env.wit);
@@ -77,7 +77,7 @@ async function main() {
 		console.log("Performing action for event: " + vm.action);
 		switch (vm.action) {
 			case "opened":
-				if (!vm.env.createOnTagging && workItem === null) {
+				if (!vm.env.createOnTag && workItem === null) {
 					workItem === null ? await create(vm, vm.env.wit) : "";
 				}
 				break;
@@ -101,7 +101,7 @@ async function main() {
 				console.log("assigned action is not yet implemented");
 				break;
 			case "labeled":
-				if (vm.env.createOnTagging && workItem === null) {
+				if (vm.env.createOnTag && vm.label == vm.env.createOnTag && workItem === null) {
 					workItem = await createForLabel(vm);
 				} else if (vm.env.setLabelsAsTags) {
 					workItem != null ? await label(vm, workItem) : "";
@@ -253,19 +253,12 @@ async function create(vm, wit) {
 
 // create a work item for the new label
 async function createForLabel(vm) {
-	console.log("Creating for label=" + vm.label);
-	if (vm.env.createOnTagging) {
-		var wit = "";
-		switch (vm.label) {
-			case "bug":
-				wit = "Bug";
-				break;
-			case "feature request":
-				wit = "Scenario"
-				break;
-			default:
-				return null;
-		}
+	if (vm.env.createOnTag && vm.env.createOnTag == vm.label) {
+		var wit = (vm.existingLabels.includes("feature request") ?
+			"Scenario" :
+			"Bug"); // default to creating a bug
+		
+		console.log("Creating for label=" + vm.label + " wit=" + wit);
 		var workItem = await create(vm, wit);
 		console.log("Work item created for label=" + vm.label);
 		return workItem;
@@ -579,8 +572,8 @@ async function updateIssueBody(vm, workItem) {
 
 // get object values from the payload that will be used for logic, updates, finds, and creates
 function getValuesFromPayload(payload, env) {
-	console.log("Payload: ");
-	console.log(JSON.stringify(payload.issue));
+	// console.log("Payload: ");
+	// console.log(JSON.stringify(payload.issue));
 	// prettier-ignore
 	var vm = {
 		action: payload.action != undefined ? payload.action : "",
@@ -590,6 +583,7 @@ function getValuesFromPayload(payload, env) {
 		state: payload.issue.state != undefined ? payload.issue.state : "",
 		user: payload.issue.user.login != undefined ? payload.issue.user.login : "",
 		body: payload.issue.body != undefined ? payload.issue.body : "",
+		existingLabels: payload.issue.labels != undefined ? payload.issue.labels : [],
 		repo_fullname: payload.repository.full_name != undefined ? payload.repository.full_name : "",
 		repo_name: payload.repository.name != undefined ? payload.repository.name : "",
 		repo_url: payload.repository.html_url != undefined ? payload.repository.html_url : "",
@@ -613,7 +607,7 @@ function getValuesFromPayload(payload, env) {
 			closedState: env.ado_close_state != undefined ? env.ado_close_state : "Closed",
 			newState: env.ado_new_state != undefined ? env.ado_new_State : "Active",
 			bypassRules: env.ado_bypassrules != undefined ? env.ado_bypassrules : false,
-			createOnTagging: env.create_on_tagging != undefined ? env.create_on_tagging : false,
+			createOnTag: env.create_on_tag != undefined ? env.create_on_tag : "",
 			tagOnClose: env.ado_tag_on_close != undefined ? env.ado_tag_on_close : ""
 		}
 	};

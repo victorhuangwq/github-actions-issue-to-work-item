@@ -1,6 +1,7 @@
-const core = require(`@actions/core`);
-const github = require(`@actions/github`);
-const azdev = require(`azure-devops-node-api`);
+const core = require('@actions/core');
+const github = require('@actions/github');
+const azdev = require('azure-devops-node-api');
+const showdown = require('showdown');
 
 const debug = false; // debug mode for testing...always set to false before doing a commit
 const testPayload = []; // used for debugging, cut and paste payload
@@ -138,6 +139,10 @@ function formatTitle(vm) {
 
 // create Work Item via https://docs.microsoft.com/en-us/rest/api/azure/devops/
 async function create(vm, wit) {
+
+	var converter = new showdown.Converter();
+	var htmlBody = converter.makeHtml(vm.body);
+
 	let botMessage = 'This item was auto-opened from GitHub <a href="' +
 		vm.url +
 		'" target="_new">issue #' +
@@ -574,6 +579,8 @@ async function updateIssueBody(vm, workItem) {
 
 // get object values from the payload that will be used for logic, updates, finds, and creates
 function getValuesFromPayload(payload, env) {
+	console.log("Payload: ");
+	console.log(JSON.stringify(payload.issue));
 	// prettier-ignore
 	var vm = {
 		action: payload.action != undefined ? payload.action : "",

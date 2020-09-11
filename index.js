@@ -152,7 +152,7 @@ async function create(vm, wit) {
 		'" target="_new">' +
 		vm.repo_fullname +
 		"</a>  project</br></br><b>Description from GitHub: </b></br>" + 
-		vm.body;
+		htmlBody;
 
 	let patchDocument = [
 		{

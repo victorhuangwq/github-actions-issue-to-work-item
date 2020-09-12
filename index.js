@@ -140,7 +140,14 @@ function formatTitle(vm) {
 // create Work Item via https://docs.microsoft.com/en-us/rest/api/azure/devops/
 async function create(vm, wit) {
 
-	var converter = new showdown.Converter();
+	var converter = new showdown.Converter({
+		simpleLineBreaks: true,
+		ghMentions: true,
+		ghCompatibleHeaderId: true,
+		simplifiedAutoLink: true,
+		excludeTrailingPunctuationFromURLs: true,
+		strikethrough: true,
+	});
 	var htmlBody = converter.makeHtml(vm.body);
 
 	let botMessage = 'This item was auto-opened from GitHub <a href="' +
@@ -255,7 +262,7 @@ async function create(vm, wit) {
 async function createForLabel(vm) {
 	if (vm.env.createOnTag && vm.env.createOnTag == vm.label) {
 		console.log("Existing Labels: " + JSON.stringify(vm.existingLabels));
-		var wit = (vm.existingLabels.includes("feature request") ?
+		var wit = (vm.existingLabels.some(label => label.name == "feature request") ?
 			"Scenario" :
 			"Bug"); // default to creating a bug
 		

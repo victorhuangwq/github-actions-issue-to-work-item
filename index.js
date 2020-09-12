@@ -180,7 +180,7 @@ async function create(vm, wit) {
 		{
 			op: "add",
 			path: "/fields/System.Tags",
-			value: vm.env.tags + "; " + vm.repository,
+			value: vm.env.tags,
 		},
 		{
 			op: "add",

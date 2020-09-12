@@ -254,6 +254,7 @@ async function create(vm, wit) {
 // create a work item for the new label
 async function createForLabel(vm) {
 	if (vm.env.createOnTag && vm.env.createOnTag == vm.label) {
+		console.log("Existing Labels: " + JSON.stringify(vm.existingLabels));
 		var wit = (vm.existingLabels.includes("feature request") ?
 			"Scenario" :
 			"Bug"); // default to creating a bug

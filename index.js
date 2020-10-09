@@ -40,7 +40,7 @@ async function main() {
 		// based on the title and tags
 		console.log("Check to see if work item already exists");
 		let workItem = await find(vm);
-		if (workItem === null) {
+		if (workItem === null || workItem === -1) {
 			console.log("Could not find existing ADO workitem");
 		} else {
 			console.log("Found existing ADO workitem: " + workItem.id);
@@ -48,11 +48,11 @@ async function main() {
 		
 		let issue = "";
 
-		// if workItem == -1 then we have an error during find
-		if (workItem === -1) {
-			core.setFailed();
-			return;
-		}
+		// // if workItem == -1 then we have an error during find
+		// if (workItem === -1) {
+		// 	core.setFailed();
+		// 	return;
+		// }
 
 		// if a work item was not found, go create one, unless we are only creating
 		// items when tagged.

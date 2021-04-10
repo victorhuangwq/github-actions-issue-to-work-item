@@ -183,6 +183,23 @@ async function create(vm) {
     });
   }
 
+  // set the work item type depending on the label
+  if (vm.label == "tracked-bug") {
+    vm.env.wit = "Bug";
+    patchDocument.push({
+      op: "add",
+      path: "/fields/System.WorkItemType",
+      value: vm.env.wit,
+    });
+  } else if (vm.label == "tracked-deliverable") {
+    vm.env.wit = "Deliverable";
+    patchDocument.push({
+      op: "add",
+      path: "/fields/System.WorkItemType",
+      value: vm.env.wit,
+    });
+  }
+
   let authHandler = azdev.getPersonalAccessTokenHandler(vm.env.adoToken);
   let connection = new azdev.WebApi(vm.env.orgUrl, authHandler);
   let client = await connection.getWorkItemTrackingApi();

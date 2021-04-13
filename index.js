@@ -184,14 +184,14 @@ async function create(vm) {
   }
 
   // set the work item type depending on the label
-  if (vm.label == "tracked-bug") {
+  if (vm.label == "bug") {
     vm.env.wit = "Bug";
     patchDocument.push({
       op: "add",
       path: "/fields/System.WorkItemType",
       value: vm.env.wit,
     });
-  } else if (vm.label == "tracked-deliverable") {
+  } else if (vm.label == "enhancement") {
     vm.env.wit = "Deliverable";
     patchDocument.push({
       op: "add",

@@ -183,24 +183,34 @@ async function create(vm) {
     });
   }
 
-  // set the work item type depending on the label
-  console.log("Creating for label=" + vm.label);
-
-  if (vm.label == "bug") {
-    vm.env.wit = "Bug";
-    patchDocument.push({
-      op: "add",
-      path: "/fields/System.WorkItemType",
-      value: vm.env.wit,
-    });
-  } else if (vm.label == "enhancement") {
-    vm.env.wit = "Scenario";
-    patchDocument.push({
-      op: "add",
-      path: "/fields/System.WorkItemType",
-      value: vm.env.wit,
-    });
-  }
+  var wit = "";
+  switch (vm.label) {
+	case "bug":
+		wit = "Bug";
+		break;
+	case "enhancement":
+		wit = "Scenario"
+		break;
+	default:
+		return null;
+   }	
+	
+	
+//   if (vm.label == "bug") {
+//     vm.env.wit = "Bug";
+//     patchDocument.push({
+//       op: "add",
+//       path: "/fields/System.WorkItemType",
+//       value: vm.env.wit,
+//     });
+//   } else if (vm.label == "enhancement") {
+//     vm.env.wit = "Scenario";
+//     patchDocument.push({
+//       op: "add",
+//       path: "/fields/System.WorkItemType",
+//       value: vm.env.wit,
+//     });
+//   }
 
   let authHandler = azdev.getPersonalAccessTokenHandler(vm.env.adoToken);
   let connection = new azdev.WebApi(vm.env.orgUrl, authHandler);
@@ -212,7 +222,7 @@ async function create(vm) {
       (customHeaders = []),
       (document = patchDocument),
       (project = vm.env.project),
-      (type = vm.env.wit),
+      (type = wit),
       (validateOnly = false),
       (bypassRules = vm.env.bypassRules)
     );

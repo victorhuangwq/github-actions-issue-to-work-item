@@ -192,7 +192,7 @@ async function create(vm) {
       value: vm.env.wit,
     });
   } else if (vm.label == "enhancement") {
-    vm.env.wit = "Scenario";
+    vm.env.wit = "Bug";
     patchDocument.push({
       op: "add",
       path: "/fields/System.WorkItemType",

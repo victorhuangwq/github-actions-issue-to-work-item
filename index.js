@@ -184,6 +184,8 @@ async function create(vm) {
   }
 
   // set the work item type depending on the label
+  console.log("Creating for label=" + vm.label);
+
   if (vm.label == "bug") {
     vm.env.wit = "Bug";
     patchDocument.push({

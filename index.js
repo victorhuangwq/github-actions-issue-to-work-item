@@ -187,9 +187,19 @@ async function create(vm) {
   switch (vm.label) {
 	case "bug":
 		wit = "Bug";
+		 patchDocument.push({
+      			op: "add",
+      			path: "/fields/System.WorkItemType",
+      			value: "Bug",
+     			});
 		break;
 	case "enhancement":
 		wit = "Scenario"
+		 patchDocument.push({
+      			op: "add",
+      			path: "/fields/System.WorkItemType",
+      			value: "Scenario",
+     			});
 		break;
 	default:
 		return null;

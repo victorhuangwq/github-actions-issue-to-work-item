@@ -255,7 +255,7 @@ async function createForLabel(vm) {
 			case "bug":
 				wit = "Bug";
 				break;
-			case "enhancement":
+			case "tracked":
 				wit = "Scenario"
 				break;
 			default:

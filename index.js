@@ -30,7 +30,8 @@ async function main() {
 			console.log("Set values from payload & env");
 			vm = getValuesFromPayload(github.context.payload, env);
 		}
-
+		
+		console.log("WIT VALUE!!!!!!: " + vm.env.wit);
 		console.log("Context: " + vm);
 
 		// todo: validate we have all the right inputs
@@ -600,7 +601,7 @@ function getValuesFromPayload(payload, env) {
 			ghToken: env.github_token != undefined ? env.github_token : "",
 			project: env.ado_project != undefined ? env.ado_project : "",
 			areaPath: env.ado_area_path != undefined ? env.ado_area_path : "",
-			wit: env.ado_wit != undefined ? env.ado_wit : "Bug",
+			wit: env.ado_wit != undefined ? env.ado_wit : "Scenario",
 			tags: env.ado_tags != undefined ? env.ado_tags : "",
 			setLabelsAsTags: env.ado_set_labels != undefined ? env.ado_set_labels : true,
 			closedState: env.ado_close_state != undefined ? env.ado_close_state : "Closed",

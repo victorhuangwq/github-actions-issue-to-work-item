@@ -30,10 +30,8 @@ async function main() {
 		} else {
 			console.log("Set values from payload & env");
 			vm = getValuesFromPayload(github.context.payload, env);
+      vm.env.createOnTagging = true;
 		}
-		
-		console.log("WIT VALUE!!!!!!: " + vm.label);
-		console.log("Context: " + vm);
 
 		// todo: validate we have all the right inputs
 
@@ -46,8 +44,6 @@ async function main() {
 		} else {
 			console.log("Found existing ADO workitem: " + workItem.id);
 		}
-		
-		let issue = "";
 
 		// if workItem == -1 then we have an error during find
 		if (workItem === -1) {

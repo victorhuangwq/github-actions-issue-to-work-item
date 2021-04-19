@@ -4,6 +4,7 @@ const azdev = require(`azure-devops-node-api`);
 
 const debug = false; // debug mode for testing...always set to false before doing a commit
 const testPayload = []; // used for debugging, cut and paste payload
+const bucketScenario = "https://dev.azure.com/microsoft/Edge/_workitems/edit/32472886"
 
 main();
 
@@ -193,6 +194,14 @@ async function create(vm, wit) {
 				url: vm.url,
 			},
 		},
+    {
+      op: "add",
+      path: "/relations/-",
+      value: {
+        rel: "System.LinkTypes.Hierarchy-Forward",
+        url: bucketScenario
+      }
+    }
 	];
 
 	// if area path is not empty, set it

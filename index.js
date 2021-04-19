@@ -253,12 +253,12 @@ async function createForLabel(vm) {
 	if (vm.env.createOnTagging) {
 		var wit = "";
 		switch (vm.label) {
-			case "bug":
-				wit = "Bug";
-				break;
 			case "enhancement":
 				wit = "Scenario"
 				break;
+			case "bug":
+				wit = "Bug";
+				break;		
 			default:
 				return null;
 		}

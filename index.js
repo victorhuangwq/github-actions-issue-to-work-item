@@ -212,6 +212,7 @@ async function create(vm, wit) {
 		});
 	}
 
+  console.log("number of comments"+vm.comments.length)
   for (const comment in vm.comments) {
     patchDocument.push({
 			op: "add",

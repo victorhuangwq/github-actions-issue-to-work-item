@@ -212,6 +212,20 @@ async function create(vm, wit) {
 		});
 	}
 
+  for (const comment in vm.comments) {
+    patchDocument.push({
+			op: "add",
+			path: "/fields/System.History",
+			value:
+				'<a href="' +
+				comment.url +
+				'" target="_new">GitHub comment by '+
+        comment.user.login +
+        '</a></br></br>' +
+				comment.body,
+		});
+  }
+
 	let authHandler = azdev.getPersonalAccessTokenHandler(vm.env.adoToken);
 	let connection = new azdev.WebApi(vm.env.orgUrl, authHandler);
 	let client = await connection.getWorkItemTrackingApi();
@@ -587,6 +601,7 @@ function getValuesFromPayload(payload, env) {
 		closed_at: payload.issue.closed_at != undefined ? payload.issue.closed_at : null,
 		owner: payload.repository.owner != undefined ? payload.repository.owner.login : "",
 		label: "",
+    comments: "",
 		comment_text: "",
 		comment_url: "",
 		organization: "",
@@ -630,6 +645,16 @@ function getValuesFromPayload(payload, env) {
 		vm.comment_text = payload.comment.body != undefined ? payload.comment.body : "";
 		vm.comment_url = payload.comment.html_url != undefined ? payload.comment.html_url : "";
 	}
+
+  // Get a list of the existing comments on an issue
+  if (payload.comments_url) {
+    let comments = () => {
+      fetch(payload.comments_url)
+        .then((res) => { return res.json() })
+        .then((data) => { fetchedData(data) })
+    }
+    vm.comments = comments ? comments : [];
+  }
 
 	// split repo full name to get the org and repository names
 	if (vm.repo_fullname != "") {

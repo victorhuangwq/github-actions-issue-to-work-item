@@ -216,8 +216,8 @@ async function create(vm, wit) {
 
   // Get existing issues comments
   const comments = await fetch(vm.comments_url)
-    .then((res) => { return res.json() })
-    .then((data) => { fetchedData(data) })
+    .then((res) => res.json())
+    .then((data) => data)
     .catch(() => []);
   console.log("number of comments"+comments.length)
   for (const comment in comments) {

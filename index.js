@@ -212,8 +212,14 @@ async function create(vm, wit) {
 		});
 	}
 
-  console.log("number of comments"+vm.comments.length)
-  for (const comment in vm.comments) {
+
+  // Get existing issues comments
+   const comments = await fetch(payload.comments_url)
+      .then((res) => { return res.json() })
+      .then((data) => { fetchedData(data) })
+      .catch(() => []);
+  console.log("number of comments"+comments.length)
+  for (const comment in comments) {
     patchDocument.push({
 			op: "add",
 			path: "/fields/System.History",
@@ -602,9 +608,9 @@ function getValuesFromPayload(payload, env) {
 		closed_at: payload.issue.closed_at != undefined ? payload.issue.closed_at : null,
 		owner: payload.repository.owner != undefined ? payload.repository.owner.login : "",
 		label: "",
-    comments: "",
 		comment_text: "",
 		comment_url: "",
+    comments_url: "",
 		organization: "",
 		repository: "",
 		env: {
@@ -647,14 +653,9 @@ function getValuesFromPayload(payload, env) {
 		vm.comment_url = payload.comment.html_url != undefined ? payload.comment.html_url : "";
 	}
 
-  // Get a list of the existing comments on an issue
+  // Enables us to get a list of the existing comments
   if (payload.comments_url) {
-    let comments = () => {
-      fetch(payload.comments_url)
-        .then((res) => { return res.json() })
-        .then((data) => { fetchedData(data) })
-    }
-    vm.comments = comments ? comments : [];
+    vm.comments_url = payload.comments_url;
   }
 
 	// split repo full name to get the org and repository names

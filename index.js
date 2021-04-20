@@ -1,6 +1,7 @@
 const core = require(`@actions/core`);
 const github = require(`@actions/github`);
 const azdev = require(`azure-devops-node-api`);
+const fetch = require(`node-fetch`);
 
 const debug = false; // debug mode for testing...always set to false before doing a commit
 const testPayload = []; // used for debugging, cut and paste payload
@@ -214,8 +215,7 @@ async function create(vm, wit) {
 
 
   // Get existing issues comments
-  const req = new Request(payload.comments_url)
-  const comments = await fetch(req)
+  const comments = await fetch(payload.comments_url)
     .then((res) => { return res.json() })
     .then((data) => { fetchedData(data) })
     .catch(() => []);

@@ -194,7 +194,7 @@ async function create(vm, wit) {
       op: "add",
       path: "/relations/-",
       value: {
-        rel: "System.LinkTypes.Hierarchy-Forward",
+        rel: "System.LinkTypes.Hierarchy-Reverse",
         url: bucketScenario,
         attributes: {
           comment: ""
@@ -424,22 +424,6 @@ async function label(vm, workItem) {
 			value: workItem.fields["System.Tags"] + ", " + vm.label,
 		});
 	}
-  // set the work item type depending on the label
-  if (vm.label == "bug") {
-    vm.env.wit = "Bug";
-    patchDocument.push({
-      op: "replace",
-      path: "/fields/System.WorkItemType",
-      value: vm.env.wit,
-    });
-  } else if (vm.label == "enhancement") {
-    vm.env.wit = "Scenario";
-    patchDocument.push({
-      op: "replace",
-      path: "/fields/System.WorkItemType",
-      value: vm.env.wit,
-    });
-  }
 
 	if (patchDocument.length > 0) {
 		return await updateWorkItem(patchDocument, workItem.id, vm.env);

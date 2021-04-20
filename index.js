@@ -259,18 +259,7 @@ async function create(vm, wit) {
 async function createForLabel(vm) {
 	console.log("Creating for label=" + vm.label);
 	if (vm.env.createOnTagging) {
-		var wit = "";
-		switch (vm.label) {
-			case "enhancement":
-				wit = "Scenario"
-				break;
-			case "bug":
-				wit = "Bug";
-				break;		
-			default:
-				return null;
-		}
-		var workItem = await create(vm, wit);
+		var workItem = await create(vm, vm.env.wit);
 		console.log("Work item created for label=" + vm.label);
 		return workItem;
 	}
@@ -435,6 +424,22 @@ async function label(vm, workItem) {
 			value: workItem.fields["System.Tags"] + ", " + vm.label,
 		});
 	}
+  // set the work item type depending on the label
+  if (vm.label == "bug") {
+    vm.env.wit = "Bug";
+    patchDocument.push({
+      op: "replace",
+      path: "/fields/System.WorkItemType",
+      value: vm.env.wit,
+    });
+  } else if (vm.label == "enhancement") {
+    vm.env.wit = "Scenario";
+    patchDocument.push({
+      op: "replace",
+      path: "/fields/System.WorkItemType",
+      value: vm.env.wit,
+    });
+  }
 
 	if (patchDocument.length > 0) {
 		return await updateWorkItem(patchDocument, workItem.id, vm.env);
@@ -623,6 +628,16 @@ function getValuesFromPayload(payload, env) {
 	// label is not always part of the payload
 	if (payload.label != undefined) {
 		vm.label = payload.label.name != undefined ? payload.label.name : "";
+    switch (vm.label) {
+			case "enhancement":
+				vm.env.wit = "Scenario"
+				break;
+			case "bug":
+				vm.env.wit = "Bug";
+				break;		
+			default:
+				return null;
+		}
 	}
 
 	// comments are not always part of the payload

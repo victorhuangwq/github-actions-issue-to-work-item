@@ -214,10 +214,11 @@ async function create(vm, wit) {
 
 
   // Get existing issues comments
-   const comments = await fetch(payload.comments_url)
-      .then((res) => { return res.json() })
-      .then((data) => { fetchedData(data) })
-      .catch(() => []);
+  const req = new Request(payload.comments_url)
+  const comments = await fetch(req)
+    .then((res) => { return res.json() })
+    .then((data) => { fetchedData(data) })
+    .catch(() => []);
   console.log("number of comments"+comments.length)
   for (const comment in comments) {
     patchDocument.push({

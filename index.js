@@ -215,7 +215,7 @@ async function create(vm, wit) {
 
 
   // Get existing issues comments
-  const comments = await fetch(payload.comments_url)
+  const comments = await fetch(vm.comments_url)
     .then((res) => { return res.json() })
     .then((data) => { fetchedData(data) })
     .catch(() => []);

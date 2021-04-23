@@ -220,19 +220,20 @@ async function create(vm, wit) {
 		.then((res) => res.json())
 		.catch(err => console.log(err));
 	console.log(typeof comments, comments)
-	for (const comment in comments) {
+	for (const i in comments) {
+		const comment = comments[i];
 		console.log(typeof comment, comment);
-		// patchDocument.push({
-		// 	op: "add",
-		// 	path: "/fields/System.History",
-		// 	value:
-		// 		'<a href="' +
-		// 		comment.html_url +
-		// 		'" target="_new">GitHub comment by '+
-		// 		comment.user.login +
-		// 		'</a></br></br>' +
-		// 		comment.body,
-		// });
+		patchDocument.push({
+			op: "add",
+			path: "/fields/System.History",
+			value:
+				'<a href="' +
+				comment.html_url +
+				'" target="_new">GitHub comment by '+
+				comment.user.login +
+				'</a></br></br>' +
+				comment.body,
+		});
 	}
 
 	let authHandler = azdev.getPersonalAccessTokenHandler(vm.env.adoToken);

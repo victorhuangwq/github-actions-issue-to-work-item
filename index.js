@@ -31,7 +31,7 @@ async function main() {
 		} else {
 			console.log("Set values from payload & env");
 			vm = getValuesFromPayload(github.context.payload, env);
-      vm.env.createOnTagging = true;
+      		vm.env.createOnTagging = true;
 		}
 
 		// todo: validate we have all the right inputs
@@ -191,17 +191,17 @@ async function create(vm, wit) {
 				url: vm.url,
 			},
 		},
-    {
-      op: "add",
-      path: "/relations/-",
-      value: {
-        rel: "System.LinkTypes.Hierarchy-Reverse",
-        url: bucketScenario,
-        attributes: {
-          comment: ""
-        }
-      }
-    }
+		{
+			op: "add",
+			path: "/relations/-",
+			value: {
+				rel: "System.LinkTypes.Hierarchy-Reverse",
+				url: bucketScenario,
+				attributes: {
+					comment: ""
+				}
+			}
+		}
 	];
 
 	// if area path is not empty, set it
@@ -216,10 +216,10 @@ async function create(vm, wit) {
 
   // Get existing issues comments
   const comments = await fetch(vm.comments_url)
-    .then((res) => res.json())
+    .then((res) => {console.log(res); return res.json(); })
     .then((data) => data)
-    .catch(() => []);
-  console.log("number of comments"+comments.length)
+    .catch(err => console.log(err));
+  console.log("number of comments " + comments.length)
   for (const comment in comments) {
     patchDocument.push({
 			op: "add",
@@ -228,8 +228,8 @@ async function create(vm, wit) {
 				'<a href="' +
 				comment.url +
 				'" target="_new">GitHub comment by '+
-        comment.user.login +
-        '</a></br></br>' +
+				comment.user.login +
+				'</a></br></br>' +
 				comment.body,
 		});
   }
@@ -656,6 +656,7 @@ function getValuesFromPayload(payload, env) {
 
   // Enables us to get a list of the existing comments
   if (payload.comments_url) {
+    console.log(payload.comments_url)
     vm.comments_url = payload.comments_url;
   }
 

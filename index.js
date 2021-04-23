@@ -222,17 +222,17 @@ async function create(vm, wit) {
 	console.log(typeof comments, comments)
 	for (const comment in comments) {
 		console.log(typeof comment, comment);
-		patchDocument.push({
-			op: "add",
-			path: "/fields/System.History",
-			value:
-				'<a href="' +
-				comment.html_url +
-				'" target="_new">GitHub comment by '+
-				comment.user.login +
-				'</a></br></br>' +
-				comment.body,
-		});
+		// patchDocument.push({
+		// 	op: "add",
+		// 	path: "/fields/System.History",
+		// 	value:
+		// 		'<a href="' +
+		// 		comment.html_url +
+		// 		'" target="_new">GitHub comment by '+
+		// 		comment.user.login +
+		// 		'</a></br></br>' +
+		// 		comment.body,
+		// });
 	}
 
 	let authHandler = azdev.getPersonalAccessTokenHandler(vm.env.adoToken);

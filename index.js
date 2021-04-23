@@ -214,26 +214,26 @@ async function create(vm, wit) {
 	}
 
 
-  // Get existing issues comments
-  const commentsUrl = `https://api.github.com/repos/${vm.repo_fullname}/issues/${vm.number}/comments`;
-  const comments = await fetch(commentsUrl)
-    .then((res) => res.json())
-    .then((data) => data)
-    .catch(err => console.log(err));
-  console.log(comments);
-  for (const comment in comments) {
-    patchDocument.push({
-			op: "add",
-			path: "/fields/System.History",
-			value:
-				'<a href="' +
-				comment.url +
-				'" target="_new">GitHub comment by '+
-				comment.user.login +
-				'</a></br></br>' +
-				comment.body,
-		});
-  }
+	// Get existing issues comments
+	const commentsUrl = `https://api.github.com/repos/${vm.repo_fullname}/issues/${vm.number}/comments`;
+	const comments = await fetch(commentsUrl)
+		.then((res) => res.json())
+		.then((data) => JSON.parse(data))
+		.catch(err => console.log(err));
+	for (const comment in comments) {
+		console.log(typeof comment, comment);
+		patchDocument.push({
+				op: "add",
+				path: "/fields/System.History",
+				value:
+					'<a href="' +
+					comment.html_url +
+					'" target="_new">GitHub comment by '+
+					comment.user.login +
+					'</a></br></br>' +
+					comment.body,
+			});
+	}
 
 	let authHandler = azdev.getPersonalAccessTokenHandler(vm.env.adoToken);
 	let connection = new azdev.WebApi(vm.env.orgUrl, authHandler);

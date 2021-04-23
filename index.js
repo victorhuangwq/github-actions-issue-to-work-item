@@ -171,20 +171,6 @@ async function create(vm, wit) {
 		},
 		{
 			op: "add",
-			path: "/fields/System.History",
-			value:
-				'GitHub <a href="' +
-				vm.url +
-				'" target="_new">issue #' +
-				vm.number +
-				'</a> created in <a href="' +
-				vm.repo_url +
-				'" target="_new">' +
-				vm.repo_fullname +
-				"</a>",
-		},
-		{
-			op: "add",
 			path: "/relations/-",
 			value: {
 				rel: "Hyperlink",
@@ -213,28 +199,42 @@ async function create(vm, wit) {
 		});
 	}
 
-
-	// Get existing issues comments
+	// Migrate issue history
+	let history =
+		'GitHub <a href="' +
+		vm.url +
+		'" target="_new">issue #' +
+		vm.number +
+		'</a> labeled as '+
+		vm.label +
+		' in <a href="' +
+		vm.repo_url +
+		'" target="_new">' +
+		vm.repo_fullname +
+		"</a>";
+	
 	const commentsUrl = `https://api.github.com/repos/${vm.repo_fullname}/issues/${vm.number}/comments`;
 	const comments = await fetch(commentsUrl)
 		.then((res) => res.json())
 		.catch(err => console.log(err));
-	console.log(typeof comments, comments)
 	for (const i in comments) {
 		const comment = comments[i];
-		console.log(typeof comment, comment);
-		patchDocument.push({
-			op: "add",
-			path: "/fields/System.History",
-			value:
-				'<a href="' +
+		history += 
+				'</br></br><a href="' +
 				comment.html_url +
 				'" target="_new">GitHub comment by '+
 				comment.user.login +
-				'</a></br></br>' +
-				comment.body,
-		});
+				'at' +
+				comment.created_at +
+				'</a></br>' +
+				comment.body;
 	}
+
+	patchDocument.push({
+		op: "add",
+		path: "/fields/System.History",
+		value: history,
+	});
 
 	let authHandler = azdev.getPersonalAccessTokenHandler(vm.env.adoToken);
 	let connection = new azdev.WebApi(vm.env.orgUrl, authHandler);

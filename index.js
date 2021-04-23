@@ -215,12 +215,13 @@ async function create(vm, wit) {
 
 
   // Get existing issues comments
-  console.log(vm.comments_url);
-  const comments = await fetch(vm.comments_url)
+  const commentsUrl = `https://api.github.com/repos/${vm.repo_fullname}/issues/${vm.number}/comments`;
+  console.log(commentsUrl);
+  const comments = await fetch(commentsUrl)
     .then((res) => {console.log(res); return res.json(); })
     .then((data) => data)
     .catch(err => console.log(err));
-  console.log("number of comments " + comments.length)
+  console.log("number of comments " + comments.length);
   for (const comment in comments) {
     patchDocument.push({
 			op: "add",
@@ -612,7 +613,6 @@ function getValuesFromPayload(payload, env) {
 		label: "",
 		comment_text: "",
 		comment_url: "",
-    comments_url: "",
 		organization: "",
 		repository: "",
 		env: {
@@ -654,12 +654,6 @@ function getValuesFromPayload(payload, env) {
 		vm.comment_text = payload.comment.body != undefined ? payload.comment.body : "";
 		vm.comment_url = payload.comment.html_url != undefined ? payload.comment.html_url : "";
 	}
-
-  // Enables us to get a list of the existing comments
-  if (payload.comments_url) {
-    console.log(payload.comments_url)
-    vm.comments_url = payload.comments_url;
-  }
 
 	// split repo full name to get the org and repository names
 	if (vm.repo_fullname != "") {

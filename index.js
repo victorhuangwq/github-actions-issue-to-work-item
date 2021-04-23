@@ -216,12 +216,11 @@ async function create(vm, wit) {
 
   // Get existing issues comments
   const commentsUrl = `https://api.github.com/repos/${vm.repo_fullname}/issues/${vm.number}/comments`;
-  console.log(commentsUrl);
   const comments = await fetch(commentsUrl)
-    .then((res) => {console.log(res); return res.json(); })
+    .then((res) => res.json())
     .then((data) => data)
     .catch(err => console.log(err));
-  console.log("number of comments " + comments.length);
+  console.log(comments);
   for (const comment in comments) {
     patchDocument.push({
 			op: "add",

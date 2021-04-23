@@ -217,8 +217,7 @@ async function create(vm, wit) {
 	// Get existing issues comments
 	const commentsUrl = `https://api.github.com/repos/${vm.repo_fullname}/issues/${vm.number}/comments`;
 	const comments = await fetch(commentsUrl)
-		.then((res) => res.text())
-		.then((data) => JSON.parse(data))
+		.then((res) => res.json())
 		.catch(err => console.log(err));
 	console.log(typeof comments, comments)
 	for (const comment in comments) {

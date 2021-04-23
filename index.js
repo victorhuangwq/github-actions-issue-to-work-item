@@ -218,21 +218,21 @@ async function create(vm, wit) {
 	const commentsUrl = `https://api.github.com/repos/${vm.repo_fullname}/issues/${vm.number}/comments`;
 	const comments = await fetch(commentsUrl)
 		.then((res) => res.json())
-		.then((data) => JSON.parse(data))
+		.then((data) => {console.log(typeof data, data); return data;})
 		.catch(err => console.log(err));
 	for (const comment in comments) {
 		console.log(typeof comment, comment);
 		patchDocument.push({
-				op: "add",
-				path: "/fields/System.History",
-				value:
-					'<a href="' +
-					comment.html_url +
-					'" target="_new">GitHub comment by '+
-					comment.user.login +
-					'</a></br></br>' +
-					comment.body,
-			});
+			op: "add",
+			path: "/fields/System.History",
+			value:
+				'<a href="' +
+				comment.html_url +
+				'" target="_new">GitHub comment by '+
+				comment.user.login +
+				'</a></br></br>' +
+				comment.body,
+		});
 	}
 
 	let authHandler = azdev.getPersonalAccessTokenHandler(vm.env.adoToken);

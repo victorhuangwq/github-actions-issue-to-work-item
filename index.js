@@ -161,7 +161,7 @@ async function formatHistory(vm) {
 			comment.user.login +
 			' on ' +
 			comment.created_at.slice(0, 10) +
-			'</br>' +
+			':</br>' +
 			comment.body;
 	}
 	return history;
@@ -233,11 +233,10 @@ async function create(vm, wit) {
 
 	// Migrate issue history
 	let history = await formatHistory(vm);
-	console.log(history);
 	patchDocument.push({
 		op: "add",
 		path: "/fields/System.History",
-		value: history,
+		value: history.trim(),
 	});
 
 	let authHandler = azdev.getPersonalAccessTokenHandler(vm.env.adoToken);
@@ -277,7 +276,7 @@ async function create(vm, wit) {
 	if (workItemSaveResult != -1) {
 		console.log(workItemSaveResult);
 		// link the issue to the work item via AB# syntax with AzureBoards+GitHub App
-		issue = vm.env.ghToken != "" ? await updateIssueBody(vm, workItemSaveResult) : "";
+		// issue = vm.env.ghToken != "" ? await updateIssueBody(vm, workItemSaveResult) : "";
 	}
 
 	return workItemSaveResult;

@@ -234,9 +234,9 @@ async function create(vm, wit) {
 	// Migrate issue history
 	let history = await formatHistory(vm);
 	patchDocument.push({
-		op: "add",
+		op: "replace",
 		path: "/fields/System.History",
-		value: history.trim(),
+		value: history,
 	});
 
 	let authHandler = azdev.getPersonalAccessTokenHandler(vm.env.adoToken);
@@ -275,6 +275,7 @@ async function create(vm, wit) {
 
 	if (workItemSaveResult != -1) {
 		console.log(workItemSaveResult);
+		// TODO: Make this work
 		// link the issue to the work item via AB# syntax with AzureBoards+GitHub App
 		// issue = vm.env.ghToken != "" ? await updateIssueBody(vm, workItemSaveResult) : "";
 	}

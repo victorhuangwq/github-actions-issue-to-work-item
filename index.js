@@ -134,6 +134,38 @@ async function main() {
 function formatTitle(vm) {
 	return "[GitHub #" + vm.number + "] " + vm.title;
 }
+async function formatHistory(vm) {
+	let history =
+		'GitHub <a href="' +
+		vm.url +
+		'" target="_new">issue #' +
+		vm.number +
+		'</a> labeled as '+
+		vm.label +
+		' in <a href="' +
+		vm.repo_url +
+		'" target="_new">' +
+		vm.repo_fullname +
+		"</a>";
+	
+	const commentsUrl = `https://api.github.com/repos/${vm.repo_fullname}/issues/${vm.number}/comments`;
+	const comments = await fetch(commentsUrl)
+		.then((res) => res.json())
+		.catch(err => console.log(err));
+	for (const i in comments) {
+		const comment = comments[i];
+		history += 
+			'</br></br>GitHub <a href="' +
+			comment.html_url +
+			'" target="_new">comment</a> by '+
+			comment.user.login +
+			' on ' +
+			comment.created_at.slice(0, 10) +
+			'</br>' +
+			comment.body;
+	}
+	return history;
+}
 
 // create Work Item via https://docs.microsoft.com/en-us/rest/api/azure/devops/
 async function create(vm, wit) {
@@ -200,36 +232,8 @@ async function create(vm, wit) {
 	}
 
 	// Migrate issue history
-	let history =
-		'GitHub <a href="' +
-		vm.url +
-		'" target="_new">issue #' +
-		vm.number +
-		'</a> labeled as '+
-		vm.label +
-		' in <a href="' +
-		vm.repo_url +
-		'" target="_new">' +
-		vm.repo_fullname +
-		"</a>";
-	
-	const commentsUrl = `https://api.github.com/repos/${vm.repo_fullname}/issues/${vm.number}/comments`;
-	const comments = await fetch(commentsUrl)
-		.then((res) => res.json())
-		.catch(err => console.log(err));
-	for (const i in comments) {
-		const comment = comments[i];
-		history += 
-				'</br></br><a href="' +
-				comment.html_url +
-				'" target="_new">GitHub comment by '+
-				comment.user.login +
-				'at' +
-				comment.created_at +
-				'</a></br>' +
-				comment.body;
-	}
-
+	let history = await formatHistory(vm);
+	console.log(history);
 	patchDocument.push({
 		op: "add",
 		path: "/fields/System.History",

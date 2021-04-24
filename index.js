@@ -232,9 +232,9 @@ async function create(vm, wit) {
 	}
 
 	// Migrate issue history
-	let history = await formatHistory(vm);
+	const history = await formatHistory(vm);
 	patchDocument.push({
-		op: "replace",
+		op: "add",
 		path: "/fields/System.History",
 		value: history,
 	});

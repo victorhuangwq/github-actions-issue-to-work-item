@@ -31,7 +31,6 @@ async function main() {
 		} else {
 			console.log("Set values from payload & env");
 			vm = getValuesFromPayload(github.context.payload, env);
-      		vm.env.createOnTagging = true;
 		}
 
 		// todo: validate we have all the right inputs
@@ -160,7 +159,7 @@ async function formatHistory(vm) {
 			'" target="_new">comment</a> by '+
 			comment.user.login +
 			' on ' +
-			comment.created_at.slice(0, 10) +
+			comment.created_at +
 			':</br>' +
 			comment.body;
 	}
@@ -332,9 +331,13 @@ async function comment(vm, workItem) {
 			op: "add",
 			path: "/fields/System.History",
 			value:
-				'<a href="' +
+				'Github <a href="' +
 				vm.comment_url +
-				'" target="_new">GitHub Comment Added</a></br></br>' +
+				'" target="_new">comment</a> added by '+
+				vm.user +
+				' at ' +
+				vm.created_at +
+				'</br></br>' +
 				vm.comment_text,
 		});
 	}
@@ -365,19 +368,18 @@ async function tag(vm, workItem, newTag) {
 async function close(vm, workItem) {
 	let patchDocument = [];
 
-	var closedState = vm.env.closedState;
-	// TODO: Move into main.yml settings
-	// switch (workItem.workItemType) {
-	// 	case "Bug":
-	// 		closedState = "Closed";
-	// 		break;
-	// 	case "Task":
-	// 	case "Deliverable":
-	// 	case "Scenario":
-	// 	case "Epic":
-	// 		closedState = "Completed";
-	// 		break;
-	// }
+	var closedState;
+	switch (workItem.workItemType) {
+		case "Bug":
+			closedState = "Closed";
+			break;
+		case "Task":
+		case "Deliverable":
+		case "Scenario":
+		case "Epic":
+			closedState = "Completed";
+			break;
+	}
 
 	patchDocument.push({
 		op: "add",
@@ -390,9 +392,13 @@ async function close(vm, workItem) {
 			op: "add",
 			path: "/fields/System.History",
 			value:
-				'<a href="' +
+				'Github <a href="' +
 				vm.comment_url +
-				'" target="_new">GitHub Comment Added</a></br></br>' +
+				'" target="_new">comment</a> added by '+
+				vm.user +
+				' at ' +
+				vm.created_at +
+				'</br></br>' +
 				vm.comment_text,
 		});
 	}
@@ -617,6 +623,7 @@ function getValuesFromPayload(payload, env) {
 		label: "",
 		comment_text: "",
 		comment_url: "",
+		created_at: "",
 		organization: "",
 		repository: "",
 		env: {
@@ -640,7 +647,7 @@ function getValuesFromPayload(payload, env) {
 	// label is not always part of the payload
 	if (payload.label != undefined) {
 		vm.label = payload.label.name != undefined ? payload.label.name : "";
-    switch (vm.label) {
+    	switch (vm.label) {
 			case "enhancement":
 				vm.env.wit = "Scenario"
 				break;
@@ -657,6 +664,8 @@ function getValuesFromPayload(payload, env) {
 	if (payload.comment != undefined) {
 		vm.comment_text = payload.comment.body != undefined ? payload.comment.body : "";
 		vm.comment_url = payload.comment.html_url != undefined ? payload.comment.html_url : "";
+		vm.user = payload.comment.user.login;
+		vm.created_at = payload.comment.created_at;
 	}
 
 	// split repo full name to get the org and repository names

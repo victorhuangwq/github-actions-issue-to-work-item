@@ -313,6 +313,8 @@ async function update(vm, workItem) {
 		case "Epic":
 			descriptionField = "System.Description";
 			break;
+		default:
+			console.log("Unhandled WIT: " + workItem.workItemType)
 	}
 
 	if (
@@ -326,11 +328,12 @@ async function update(vm, workItem) {
 		});
 	}
 
-	if (workItem.fields[descriptionField] != vm.body) {
+	const description = formatDescription(vm);
+	if (workItem.fields[descriptionField] != description) {
 		patchDocument.push({
 			op: "add",
-			path: "/fields/"+descriptionField,
-			value: formatDescription(vm),
+			path: "/fields/" + descriptionField,
+			value: description,
 		});
 	}
 

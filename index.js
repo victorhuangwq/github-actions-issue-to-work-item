@@ -51,6 +51,11 @@ async function main() {
 			return;
 		}
 
+		// Set the WIT if it wasn't set already
+		if (!vm.env.wit) {
+			vm.env.wit = workItem.fields["System.WorkItemType"];
+		}
+
 		// if a work item was not found, go create one, unless we are only creating
 		// items when tagged.
 		if (!vm.env.createOnTagging) {
@@ -303,7 +308,7 @@ async function update(vm, workItem) {
 	let patchDocument = [];
 	
 	var descriptionField;
-	switch (workItem.workItemType) {
+	switch (vm.env.wit) {
 		case "Bug":
 			descriptionField = "Microsoft.VSTS.TCM.ReproSteps";
 			break;
@@ -314,7 +319,8 @@ async function update(vm, workItem) {
 			descriptionField = "System.Description";
 			break;
 		default:
-			console.log("Unhandled WIT: " + Object.keys(workItem))
+			console.log("Unhandled WIT: " + vm.env.wit);
+			break;
 	}
 
 	if (
@@ -391,7 +397,7 @@ async function close(vm, workItem) {
 	let patchDocument = [];
 
 	var closedState;
-	switch (workItem.workItemType) {
+	switch (vm.env.wit) {
 		case "Bug":
 			closedState = "Closed";
 			break;
@@ -451,7 +457,7 @@ async function reopen(vm, workItem) {
 	let patchDocument = [];
 
 	var newState;
-	switch (workItem.workItemType) {
+	switch (vm.env.wit) {
 		case "Bug":
 			newState = "Active";
 			break;
@@ -668,7 +674,7 @@ function getValuesFromPayload(payload, env) {
 			ghToken: env.github_token != undefined ? env.github_token : "",
 			project: env.ado_project != undefined ? env.ado_project : "",
 			areaPath: env.ado_area_path != undefined ? env.ado_area_path : "",
-			wit: env.ado_wit != undefined ? env.ado_wit : "Scenario",
+			wit: env.ado_wit != undefined ? env.ado_wit : "",
 			tags: env.ado_tags != undefined ? env.ado_tags : "",
 			setLabelsAsTags: env.ado_set_labels != undefined ? env.ado_set_labels : true,
 			closedState: env.ado_close_state != undefined ? env.ado_close_state : "Closed",

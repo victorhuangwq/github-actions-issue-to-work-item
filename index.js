@@ -87,6 +87,7 @@ async function main() {
 			case "closed":
 				if (vm.env.tagOnClose) {
 					workItem != null ? await tag(vm, workItem, vm.env.tagOnClose) : "";
+					workItem != null ? await close(vm, workItem) : "";
 				} else {
 					workItem != null ? await close(vm, workItem) : "";
 				}
@@ -133,6 +134,20 @@ async function main() {
 function formatTitle(vm) {
 	return "[GitHub #" + vm.number + "] " + vm.title;
 }
+
+function formatDescription(vm) {
+	return 'This item was auto-opened from GitHub <a href="' +
+		vm.url +
+		'" target="_new">issue #' +
+		vm.number +
+		'</a> created in the <a href="' +
+		vm.repo_url +
+		'" target="_new">' +
+		vm.repo_fullname +
+		"</a>  project</br></br><b>Description from GitHub: </b></br>" + 
+		vm.body;
+}
+
 async function formatHistory(vm) {
 	let history =
 		'GitHub <a href="' +
@@ -168,16 +183,7 @@ async function formatHistory(vm) {
 
 // create Work Item via https://docs.microsoft.com/en-us/rest/api/azure/devops/
 async function create(vm, wit) {
-	let botMessage = 'This item was auto-opened from GitHub <a href="' +
-		vm.url +
-		'" target="_new">issue #' +
-		vm.number +
-		'</a> created in the <a href="' +
-		vm.repo_url +
-		'" target="_new">' +
-		vm.repo_fullname +
-		"</a>  project</br></br><b>Description from GitHub: </b></br>" + 
-		vm.body;
+	let botMessage = formatDescription(vm);
 
 	let patchDocument = [
 		{
@@ -295,6 +301,19 @@ async function createForLabel(vm) {
 // update existing working item
 async function update(vm, workItem) {
 	let patchDocument = [];
+	
+	var descriptionField;
+	switch (workItem.workItemType) {
+		case "Bug":
+			descriptionField = "Microsoft.VSTS.TCM.ReproSteps";
+			break;
+		case "Task":
+		case "Deliverable":
+		case "Scenario":
+		case "Epic":
+			descriptionField = "System.Description";
+			break;
+	}
 
 	if (
 		workItem.fields["System.Title"] !=
@@ -307,11 +326,11 @@ async function update(vm, workItem) {
 		});
 	}
 
-	if (workItem.fields["System.Description"] != vm.body) {
+	if (workItem.fields[descriptionField] != vm.body) {
 		patchDocument.push({
 			op: "add",
-			path: "/fields/System.Description",
-			value: vm.body,
+			path: "/fields/"+descriptionField,
+			value: formatDescription(vm),
 		});
 	}
 
@@ -428,10 +447,23 @@ async function close(vm, workItem) {
 async function reopen(vm, workItem) {
 	let patchDocument = [];
 
+	var newState;
+	switch (workItem.workItemType) {
+		case "Bug":
+			newState = "Active";
+			break;
+		case "Task":
+		case "Deliverable":
+		case "Scenario":
+		case "Epic":
+			newState = "Proposed";
+			break;
+	}
+
 	patchDocument.push({
 		op: "add",
 		path: "/fields/System.State",
-		value: vm.env.newState,
+		value: newState,
 	});
 
 	patchDocument.push({

@@ -399,7 +399,7 @@ async function close(vm, workItem) {
 	var closedState;
 	switch (vm.env.wit) {
 		case "Bug":
-			closedState = "Closed";
+			closedState = "Resolved";
 			break;
 		case "Task":
 		case "Deliverable":
@@ -442,6 +442,14 @@ async function close(vm, workItem) {
 				vm.number +
 				"</a> was closed on " +
 				vm.closed_at,
+		});
+	}
+
+	if (vm.env.wit == "Bug") {
+		patchDocument.push({
+			op: "add",
+			path: "/fields/Microsoft.VSTS.Common.ResolvedReason",
+			value: "Won't Fix",
 		});
 	}
 

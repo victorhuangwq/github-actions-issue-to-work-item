@@ -314,7 +314,7 @@ async function update(vm, workItem) {
 			descriptionField = "System.Description";
 			break;
 		default:
-			console.log("Unhandled WIT: " + workItem.workItemType)
+			console.log("Unhandled WIT: " + workItem)
 	}
 
 	if (

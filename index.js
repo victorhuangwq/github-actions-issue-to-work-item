@@ -52,7 +52,7 @@ async function main() {
 		}
 
 		// Set the WIT if it wasn't set already
-		if (!vm.env.wit) {
+		if (!vm.env.wit && workItem) {
 			vm.env.wit = workItem.fields["System.WorkItemType"];
 		}
 
@@ -561,7 +561,7 @@ async function find(vm) {
 		query:
 			"SELECT [System.Id], [System.WorkItemType], [System.Description], [System.Title], [System.AssignedTo], [System.State], [System.Tags] " +
 			"FROM workitems " +
-			"WHERE [System.TeamProject] = @project AND [System.Title] CONTAINS '[GitHub #"+vm.number+"]'",
+			"WHERE [System.TeamProject] = @project AND [System.Title] CONTAINS '[GitHub #"+vm.number+"]' AND [System.AreaPath] = "+vm.env.areaPath,
 	};
 	console.log("ADO query: " + wiql.query);
 

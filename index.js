@@ -561,7 +561,7 @@ async function find(vm) {
 		query:
 			"SELECT [System.Id], [System.WorkItemType], [System.Description], [System.Title], [System.AssignedTo], [System.State], [System.Tags] " +
 			"FROM workitems " +
-			"WHERE [System.TeamProject] = @project AND [System.Title] CONTAINS '[GitHub #"+vm.number+"]' AND [System.AreaPath] = "+vm.env.areaPath,
+			"WHERE [System.TeamProject] = @project AND [System.Title] CONTAINS '[GitHub #"+vm.number+"]' AND [System.AreaPath] = '" + vm.env.areaPath + "'"
 	};
 	console.log("ADO query: " + wiql.query);
 

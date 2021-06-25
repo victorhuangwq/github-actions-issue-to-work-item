@@ -658,6 +658,7 @@ async function updateIssueBody(vm, workItem) {
 // get object values from the payload that will be used for logic, updates, finds, and creates
 function getValuesFromPayload(payload, env) {
 	// prettier-ignore
+	console.log(2, payload, env)
 	var vm = {
 		action: payload.action != undefined ? payload.action : "",
 		url: payload.issue.html_url != undefined ? payload.issue.html_url : "",

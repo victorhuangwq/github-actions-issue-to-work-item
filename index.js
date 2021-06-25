@@ -658,7 +658,6 @@ async function updateIssueBody(vm, workItem) {
 // get object values from the payload that will be used for logic, updates, finds, and creates
 function getValuesFromPayload(payload, env) {
 	// prettier-ignore
-	console.log(2, payload, env)
 	var vm = {
 		action: payload.action != undefined ? payload.action : "",
 		url: payload.issue.html_url != undefined ? payload.issue.html_url : "",
@@ -696,6 +695,7 @@ function getValuesFromPayload(payload, env) {
 		}
 	};
 
+	console.log(2.1)
 	// label is not always part of the payload
 	if (payload.label != undefined) {
 		vm.label = payload.label.name != undefined ? payload.label.name : "";
@@ -711,6 +711,7 @@ function getValuesFromPayload(payload, env) {
 		}
 	}
 
+	console.log(2.2)
 	// comments are not always part of the payload
 	// prettier-ignore
 	if (payload.comment != undefined) {
@@ -720,6 +721,7 @@ function getValuesFromPayload(payload, env) {
 		vm.created_at = payload.comment.created_at;
 	}
 
+	console.log(2.3)
 	// split repo full name to get the org and repository names
 	if (vm.repo_fullname != "") {
 		var split = payload.repository.full_name.split("/");

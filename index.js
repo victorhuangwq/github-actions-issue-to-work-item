@@ -707,7 +707,7 @@ function getValuesFromPayload(payload, env) {
 				vm.env.wit = "Bug";
 				break;		
 			default:
-				return null;
+				vm.env.wit = "Bug";
 		}
 	}
 

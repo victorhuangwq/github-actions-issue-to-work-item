@@ -31,6 +31,7 @@ async function main() {
 		} else {
 			console.log("Set values from payload & env");
 			vm = getValuesFromPayload(github.context.payload, env);
+			console.log(1, vm)
 		}
 
 		// todo: validate we have all the right inputs
@@ -38,6 +39,7 @@ async function main() {
 		// go check to see if work item already exists in azure devops or not
 		// based on the title and tags
 		console.log("Check to see if work item already exists");
+		console.log(3, vm)
 		let workItem = await find(vm);
 		if (workItem === null) {
 			console.log("Could not find existing ADO workitem");
@@ -724,5 +726,6 @@ function getValuesFromPayload(payload, env) {
 		vm.repository = split[1] != undefined ? split[1] : "";
 	}
 
+	console.log(2, vm)
 	return vm;
 }

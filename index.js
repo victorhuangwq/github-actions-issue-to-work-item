@@ -191,7 +191,7 @@ async function formatHistory(vm) {
 
 // create Work Item via https://docs.microsoft.com/en-us/rest/api/azure/devops/
 async function create(vm, wit) {
-	let botMessage = formatDescription(vm);
+	let botMessage = await formatDescription(vm);
 
 	let patchDocument = [
 		{
@@ -337,7 +337,7 @@ async function update(vm, workItem) {
 		});
 	}
 
-	const description = formatDescription(vm);
+	const description = await formatDescription(vm);
 	if (workItem.fields[descriptionField] != description) {
 		patchDocument.push({
 			op: "add",

@@ -153,7 +153,7 @@ async function formatDescription(vm) {
 		'" target="_new">' +
 		vm.repo_fullname +
 		"</a>  project</br></br><b>Description from GitHub: </b></br>" + 
-		bodyWithMarkdown;
+		bodyWithMarkdown.data;
 }
 
 async function formatHistory(vm) {

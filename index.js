@@ -31,7 +31,6 @@ async function main() {
 		} else {
 			console.log("Set values from payload & env");
 			vm = getValuesFromPayload(github.context.payload, env);
-			console.log(1, vm)
 		}
 
 		// todo: validate we have all the right inputs
@@ -39,7 +38,6 @@ async function main() {
 		// go check to see if work item already exists in azure devops or not
 		// based on the title and tags
 		console.log("Check to see if work item already exists");
-		console.log(3, vm)
 		let workItem = await find(vm);
 		if (workItem === null) {
 			console.log("Could not find existing ADO workitem");
@@ -143,6 +141,8 @@ function formatTitle(vm) {
 }
 
 function formatDescription(vm) {
+	const octokit = new github.GitHub(vm.env.ghToken);
+	const bodyWithMarkdown = octokit.rest.markdown.render({text: vm.body})
 	return 'This item was auto-opened from GitHub <a href="' +
 		vm.url +
 		'" target="_new">issue #' +
@@ -152,7 +152,7 @@ function formatDescription(vm) {
 		'" target="_new">' +
 		vm.repo_fullname +
 		"</a>  project</br></br><b>Description from GitHub: </b></br>" + 
-		vm.body;
+		bodyWithMarkdown;
 }
 
 async function formatHistory(vm) {
@@ -695,7 +695,6 @@ function getValuesFromPayload(payload, env) {
 		}
 	};
 
-	console.log(2.1)
 	// label is not always part of the payload
 	if (payload.label != undefined) {
 		vm.label = payload.label.name != undefined ? payload.label.name : "";
@@ -711,7 +710,6 @@ function getValuesFromPayload(payload, env) {
 		}
 	}
 
-	console.log(2.2)
 	// comments are not always part of the payload
 	// prettier-ignore
 	if (payload.comment != undefined) {
@@ -721,7 +719,6 @@ function getValuesFromPayload(payload, env) {
 		vm.created_at = payload.comment.created_at;
 	}
 
-	console.log(2.3)
 	// split repo full name to get the org and repository names
 	if (vm.repo_fullname != "") {
 		var split = payload.repository.full_name.split("/");
@@ -729,6 +726,5 @@ function getValuesFromPayload(payload, env) {
 		vm.repository = split[1] != undefined ? split[1] : "";
 	}
 
-	console.log(2, vm)
 	return vm;
 }

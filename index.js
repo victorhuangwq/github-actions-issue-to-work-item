@@ -143,6 +143,7 @@ function formatTitle(vm) {
 async function formatDescription(vm) {
 	const octokit = new github.GitHub(vm.env.ghToken);
 	const bodyWithMarkdown = await octokit.markdown.render({text: vm.body})
+	console.log(bodyWithMarkdown)
 	return 'This item was auto-opened from GitHub <a href="' +
 		vm.url +
 		'" target="_new">issue #' +

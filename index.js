@@ -6,7 +6,7 @@ async function main() {
 	const payload = github.context.payload;
 
 	if (payload.action !== 'labeled' || payload.label.name !== core.getInput('label')) {
-		core.setFailed(`Action not supported: ${payload.action}. Only 'labeled' is supported.`);
+		core.setFailed(`Either action was not 'labeled'or label was not ${core.getInput('label')}.`);
 		return;
 	}
 
@@ -90,6 +90,11 @@ async function create(payload, adoClient) {
 		{
 			op: "add",
 			path: "/fields/System.Description",
+			value: botMessage,
+		},
+		{
+			op: "add",
+			path: "/fields/Microsoft.VSTS.TCM.ReproSteps",
 			value: botMessage,
 		},
 		{

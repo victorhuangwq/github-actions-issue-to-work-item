@@ -77,7 +77,7 @@ async function create(payload, adoClient) {
 	const botMessage = await formatDescription(payload.issue);
 	const shortRepoName = payload.repository.full_name.split("/")[1];
 	const tags = core.getInput("ado_tags") ? core.getInput("ado_tags") + ";" + shortRepoName : shortRepoName;
-	const isFeature = payload.issue.labels.some((label) => label === 'enhancement');
+	const isFeature = payload.issue.labels.some((label) => label === 'enhancement' || label === 'feature');
 
 	console.log(`Starting to create work item for GitHub issue #${payload.issue.number}`);
 

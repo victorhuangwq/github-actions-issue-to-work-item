@@ -48,9 +48,10 @@ function formatTitle(githubIssue) {
 	return "[GitHub #" + githubIssue.number + "] " + githubIssue.title;
 }
 
-async function formatDescription(githubIssue, githubRepository) {
+async function formatDescription(githubIssue) {
+	console.log('Creating a description based on the github issue');
 	const octokit = new github.GitHub(process.env.github_token);
-	const bodyWithMarkdown = await octokit.markdown.render({ text: githubIssue.body })
+	const bodyWithMarkdown = await octokit.markdown.render({ text: githubIssue.body });
 
 	return '<em>This item was auto-opened from GitHub <a href="' +
 		githubIssue.html_url +
@@ -63,10 +64,12 @@ async function formatDescription(githubIssue, githubRepository) {
 }
 
 async function create(payload) {
-	const botMessage = await formatDescription(payload.issue, payload.repository);
+	const botMessage = await formatDescription(payload.issue);
 	const shortRepoName = payload.repository.full_name.split("/")[1];
 	const tags = core.getInput("ado_tags") ? core.getInput("ado_tags") + ";" + shortRepoName : shortRepoName;
 	const isFeature = payload.issue.labels.some((label) => label === 'enhancement');
+
+	console.log(`Starting to create work item for GitHub issue #${payload.issue.number}`);
 
 	const patchDocument = [
 		{

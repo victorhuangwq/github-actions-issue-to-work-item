@@ -5,7 +5,7 @@ const azdev = require(`azure-devops-node-api`);
 async function main() {
 	const payload = github.context.payload;
 
-	if (payload.action !== 'labeled' || !core.getInput('label')) {
+	if (payload.action !== 'labeled' || payload.label.name !== core.getInput('label')) {
 		core.setFailed(`Action not supported: ${payload.action}. Only 'labeled' is supported.`);
 		return;
 	}
@@ -29,9 +29,9 @@ async function main() {
 		console.log("Check to see if work item already exists");
 		let workItem = await find(payload.issue.number, adoClient);
 		if (workItem === null) {
-			console.log("Could not find existing ADO workitem");
+			console.log("Could not find existing ADO workitem, creating one now");
 		} else {
-			console.log("Found existing ADO workitem: " + workItem.id);
+			console.log("Found existing ADO workitem: " + workItem.id + ". No need to create a new one");
 			return;
 		}
 
@@ -41,9 +41,7 @@ async function main() {
 			return;
 		}
 
-		if (payload.label.name === core.getInput('label')) {
-			workItem = await create(payload, adoClient);
-		}
+		workItem = await create(payload, adoClient);
 
 		// set output message
 		if (workItem != null || workItem != undefined) {
@@ -111,7 +109,7 @@ async function create(payload, adoClient) {
 
 	if (core.getInput('parent_work_item')) {
 		let parentUrl = "https://dev.azure.com/" + core.getInput('ado_organization');
-		parentUrl += '/_workitems/edit' + core.getInput('parent_work_item');
+		parentUrl += '/_workitems/edit/' + core.getInput('parent_work_item');
 
 		patchDocument.push({
 			op: "add",

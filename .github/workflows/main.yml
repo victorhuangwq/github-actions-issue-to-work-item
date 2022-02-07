@@ -14,9 +14,9 @@ jobs:
           ado_token: "${{ secrets.ADO_PERSONAL_ACCESS_TOKEN }}"
           github_token: "${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}"
         with:
-          label: "tracked"
-          ado_organization: "microsoft"
-          ado_project: "Edge"
-          ado_tags: "githubSync;patrickTest"
+          label: 'tracked'
+          ado_organization: 'microsoft'
+          ado_project: 'Edge'
+          ado_tags: 'githubSync;patrickTest'
           parent_work_item: 37589346
-          ado_area_path: "Edge\Dev Experience\Developer Tools\F12 Tools"
+          ado_area_path: 'Edge\Dev Experience\Developer Tools\F12 Tools'

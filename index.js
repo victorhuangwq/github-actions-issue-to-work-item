@@ -5,9 +5,21 @@ const azdev = require(`azure-devops-node-api`);
 async function main() {
 	const payload = github.context.payload;
 
-	// Action only runs on a label event.
 	if (payload.action !== 'labeled' || !core.getInput('label')) {
 		core.setFailed(`Action not supported: ${payload.action}. Only 'labeled' is supported.`);
+		return;
+	}
+
+	let adoClient = null;
+
+	try {
+		const orgUrl = "https://dev.azure.com/" + core.getInput('ado_organization');
+		const adoAuthHandler = azdev.getPersonalAccessTokenHandler(process.env.ado_token);
+		const adoConnection = new azdev.WebApi(orgUrl, adoAuthHandler);
+		adoClient = await adoConnection.getWorkItemTrackingApi();
+	} catch (e) {
+		console.error(e);
+		core.setFailed('Could not connect to ADO');
 		return;
 	}
 
@@ -15,7 +27,7 @@ async function main() {
 		// go check to see if work item already exists in azure devops or not
 		// based on the title and tags.
 		console.log("Check to see if work item already exists");
-		let workItem = await find(payload.issue.number);
+		let workItem = await find(payload.issue.number, adoClient);
 		if (workItem === null) {
 			console.log("Could not find existing ADO workitem");
 		} else {
@@ -30,7 +42,7 @@ async function main() {
 		}
 
 		if (payload.label.name === core.getInput('label')) {
-			workItem = await create(payload);
+			workItem = await create(payload, adoClient);
 		}
 
 		// set output message
@@ -63,7 +75,7 @@ async function formatDescription(githubIssue) {
 		bodyWithMarkdown.data;
 }
 
-async function create(payload) {
+async function create(payload, adoClient) {
 	const botMessage = await formatDescription(payload.issue);
 	const shortRepoName = payload.repository.full_name.split("/")[1];
 	const tags = core.getInput("ado_tags") ? core.getInput("ado_tags") + ";" + shortRepoName : shortRepoName;
@@ -117,16 +129,11 @@ async function create(payload) {
 		value: core.getInput('ado_area_path'),
 	});
 
-	console.log('Connecting to Azure DevOps');
-	const orgUrl = "https://dev.azure.com/" + core.getInput('ado_organization');
-	const authHandler = azdev.getPersonalAccessTokenHandler(process.env.ado_token);
-	const connection = new azdev.WebApi(orgUrl, authHandler);
-	const client = await connection.getWorkItemTrackingApi();
 	let workItemSaveResult = null;
 
 	try {
 		console.log('Creating work item');
-		workItemSaveResult = await client.createWorkItem(
+		workItemSaveResult = await adoClient.createWorkItem(
 			(customHeaders = []),
 			(document = patchDocument),
 			(project = core.getInput('ado_project')),
@@ -161,29 +168,10 @@ async function create(payload) {
 	return workItemSaveResult;
 }
 
-async function find(ghIssueNb) {
-	const orgUrl = "https://dev.azure.com/" + core.getInput('ado_organization');
+async function find(ghIssueNb, adoClient) {
+	console.log('Connecting to Azure DevOps to find work item for issue #' + ghIssueNb);
 
-	const authHandler = azdev.getPersonalAccessTokenHandler(process.env.ado_token);
-	const connection = new azdev.WebApi(orgUrl, authHandler);
-	const client = null;
-	let workItem = null;
-	let queryResult = null;
-
-	console.log("Finding work item in organization " + orgUrl);
-	try {
-		client = await connection.getWorkItemTrackingApi();
-	} catch (error) {
-		console.log(
-			"Error: Connecting to organization. Check the spelling of the organization name and ensure your token is scoped correctly."
-		);
-		core.setFailed(error);
-		return -1;
-	}
-
-	let teamContext = { project: core.getInput('ado_project') };
-
-	let wiql = {
+	const wiql = {
 		query:
 			`SELECT [System.Id], [System.WorkItemType], [System.Description], [System.Title], [System.AssignedTo], [System.State], [System.Tags]
 			FROM workitems 
@@ -191,8 +179,9 @@ async function find(ghIssueNb) {
 	};
 	console.log("ADO query: " + wiql.query);
 
+	let queryResult = null;
 	try {
-		queryResult = await client.queryByWiql(wiql, teamContext);
+		queryResult = await adoClient.queryByWiql(wiql, { project: core.getInput('ado_project') });
 
 		// if query results = null then i think we have issue with the project name
 		if (queryResult == null) {
@@ -208,7 +197,7 @@ async function find(ghIssueNb) {
 	}
 
 	console.log("Use the first item found");
-	workItem = queryResult.workItems.length > 0 ? queryResult.workItems[0] : null;
+	const workItem = queryResult.workItems.length > 0 ? queryResult.workItems[0] : null;
 
 	if (workItem != null) {
 		try {

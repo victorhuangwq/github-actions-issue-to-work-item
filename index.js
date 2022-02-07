@@ -63,7 +63,7 @@ async function formatDescription(githubIssue, githubRepository) {
 }
 
 async function create(payload) {
-	const botMessage = await formatDescription(payload.issue, payload.repository, env);
+	const botMessage = await formatDescription(payload.issue, payload.repository);
 	const shortRepoName = payload.repository.full_name.split("/")[1];
 	const tags = core.getInput("ado_tags") ? core.getInput("ado_tags") + ";" + shortRepoName : shortRepoName;
 	const isFeature = payload.issue.labels.some((label) => label === 'enhancement');

@@ -46,7 +46,7 @@ The following environment variables need to be provided to the action:
 ```yaml
 name: Sync issue to Azure DevOps work item
 
-"on":
+on:
   issues:
     types:
       [labeled]
@@ -60,7 +60,7 @@ jobs:
           ado_token: "${{ secrets.ADO_PERSONAL_ACCESS_TOKEN }}"
           github_token: "${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}"
         with:
-          label: "tracked",
+          label: "tracked"
           ado_organization: "ado_organization_name"
           ado_project: "your_project_name"
           ado_tags: "githubSync"

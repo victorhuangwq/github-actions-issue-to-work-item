@@ -1,12 +1,32 @@
-![Sync Issue to Azure DevOps work item](https://github.com/danhellem/github-actions-issue-to-work-item/workflows/Sync%20Issue%20to%20Azure%20DevOps%20work%20item/badge.svg?event=issues)
-
 # Sync GitHub issue to Azure DevOps work item
 
-Create work item in Azure DevOps when a GitHub Issue is created
+Create a work item in Azure DevOps when a GitHub issue gets a particular label.
 
-Update Azure DevOps work item when a GitHub Issue is updated
+## Inputs
 
-![alt text](./assets/demo.gif "animated demo")
+### `label`
+
+The label that needs to be added to issues for ADO work items to be created.
+
+### `ado_organization`
+
+The name of the ADO organization where work items are to be created.
+
+### `ado_project`
+
+The name of the ADO project within the organization.
+
+### `ado_tags`
+
+Optional tags to be added to the work item (separated by semi-colons).
+
+### `parent_work_item`
+
+Optional work item number to parent the newly created work item.
+
+### `ado_area_path`
+
+An area path to put the work item under.
 
 ## Outputs
 
@@ -14,24 +34,14 @@ Update Azure DevOps work item when a GitHub Issue is updated
 
 The id of the Work Item created or updated
 
+## Environment variables
+
+The following environment variables need to be provided to the action:
+
+* `ado_token`: an [Azure Personal Access Token](https://docs.microsoft.com/azure/devops/organizations/accounts/use-personal-access-tokens-to-authenticate) with "read & write" permission for Work Item.
+* `github_token`: a GitHub Personal Access Token with "repo" permissions.
+
 ## Example usage
-
-1. Add a secret named `ADO_PERSONAL_ACCESS_TOKEN` containing an [Azure Personal Access Token](https://docs.microsoft.com/en-us/azure/devops/organizations/accounts/use-personal-access-tokens-to-authenticate) with "read & write" permission for Work Items
-
-2. Add an optional secret named `GH_PERSONAL_ACCESS_TOKEN` containing a [GitHub Personal Access Token](https://help.github.com/en/enterprise/2.17/user/github/authenticating-to-github/creating-a-personal-access-token-for-the-command-line) with "repo" permissions. See optional information below.
-
-3. Install the [Azure Boards App](https://github.com/marketplace/azure-boards) from the GitHub Marketplace
-
-4. Add a workflow file which responds to issue events.
-
-   - Set Azure DevOps organization and project details.
-   - Set specific work item type settings (type, new state, closed state)
-
-   Optional Env Variables
-
-   - `ado_area_path`: To set a specific area path you want your work items created in
-   - `github_token`: Used to update the Issue with AB# syntax to link the work item to the issue. This will only work if the project is configured to use the [GitHub Azure Boards](https://github.com/marketplace/azure-boards) app.
-   - `ado_bypassrules`: Used to bypass any rules on the form to ensure the work item gets created in Azure DevOps. However, some organizations getting bypassrules permissions for the token owner can go against policy. By default the bypassrules will be set to false. If you have rules on your form that prevent the work item to be created with just Title and Description, then you will need to set to true.
 
 ```yaml
 name: Sync issue to Azure DevOps work item
@@ -39,21 +49,21 @@ name: Sync issue to Azure DevOps work item
 "on":
   issues:
     types:
-      [opened, edited, deleted, closed, reopened, labeled, unlabeled, assigned]
+      [labeled]
 
 jobs:
-  alert:
+  sync:
     runs-on: ubuntu-latest
     steps:
-      - uses: danhellem/github-actions-issue-to-work-item@master
+      - uses: captainbrosset/github-actions-issue-to-work-item@patrick
         env:
           ado_token: "${{ secrets.ADO_PERSONAL_ACCESS_TOKEN }}"
           github_token: "${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}"
+        with:
+          label: "tracked",
           ado_organization: "ado_organization_name"
           ado_project: "your_project_name"
+          ado_tags: "githubSync"
+          parent_work_item: 123456789
           ado_area_path: "optional_area_path"
-          ado_wit: "User Story"
-          ado_new_state: "New"
-          ado_close_state: "Closed"
-          ado_bypassrules: true
 ```

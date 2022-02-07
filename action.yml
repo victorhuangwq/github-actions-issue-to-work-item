@@ -1,9 +1,28 @@
 name: "GitHub Issues to Azure DevOps"
-description: "This action will Sync your GitHub Issue to Azure Boards when an Issue is created or updated"
-author: "danhellem"
+description: "This action creates an ADO work item when a GitHub issue gets a specific label"
+author: "captainbrosset"
 branding:
-  icon: "book-open"
-  color: "green"
+  icon: "refresh-cw"
+  color: "yellow"
+inputs:
+  label:
+    description: 'The label that needs to be applied for the issue to be synced to ADO'
+    required: true
+  ado_organization:
+    description: 'The name of the ADO organization where the work item should be created'
+    required: true
+  ado_project:
+    description: 'The name of the project within the ADO organization'
+    required: true
+  ado_tags:
+    description: 'A list of tags to add to the newly created work item, separated by semi-colon (;)'
+    required: false
+  parent_work_item:
+    description: 'The number of a work item to use as a parent for the newly created work item'
+    required: false
+  ado_area_path:
+    description: 'The area path under which the work item should be created'
+    required: true
 outputs:
   id:
     description: "id of work item created"

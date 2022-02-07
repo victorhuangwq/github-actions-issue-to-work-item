@@ -18,11 +18,11 @@ The name of the ADO project within the organization.
 
 ### `ado_tags`
 
-Optional tags to be added to the work item (separated by semi-colons).
+**Optional** tags to be added to the work item (separated by semi-colons).
 
 ### `parent_work_item`
 
-Optional work item number to parent the newly created work item.
+**Optional** work item number to parent the newly created work item.
 
 ### `ado_area_path`
 
@@ -60,10 +60,10 @@ jobs:
           ado_token: "${{ secrets.ADO_PERSONAL_ACCESS_TOKEN }}"
           github_token: "${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}"
         with:
-          label: "tracked"
-          ado_organization: "ado_organization_name"
-          ado_project: "your_project_name"
-          ado_tags: "githubSync"
+          label: 'tracked'
+          ado_organization: 'ado_organization_name'
+          ado_project: 'your_project_name'
+          ado_tags: 'githubSync'
           parent_work_item: 123456789
-          ado_area_path: "optional_area_path"
+          ado_area_path: 'optional_area_path'
 ```

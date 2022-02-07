@@ -6,7 +6,7 @@ async function main() {
 	const payload = github.context.payload;
 
 	if (payload.action !== 'labeled' || payload.label.name !== core.getInput('label')) {
-		core.setFailed(`Either action was not 'labeled'or label was not ${core.getInput('label')}.`);
+		console.log(`Either action was not 'labeled'or label was not ${core.getInput('label')}. Nothing to do.`);
 		return;
 	}
 

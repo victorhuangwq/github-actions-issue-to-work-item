@@ -110,12 +110,15 @@ async function create(payload, adoClient) {
 	];
 
 	if (core.getInput('parent_work_item')) {
+		let parentUrl = "https://dev.azure.com/" + core.getInput('ado_organization');
+		parentUrl += '/_workitems/edit' + core.getInput('parent_work_item');
+
 		patchDocument.push({
 			op: "add",
 			path: "/relations/-",
 			value: {
 				rel: "System.LinkTypes.Hierarchy-Reverse",
-				url: core.getInput('parent_work_item'),
+				url: parentUrl,
 				attributes: {
 					comment: ""
 				}

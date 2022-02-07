@@ -117,12 +117,14 @@ async function create(payload) {
 		value: core.getInput('ado_area_path'),
 	});
 
+	console.log('Connecting to Azure DevOps');
 	let authHandler = azdev.getPersonalAccessTokenHandler(process.env.ado_token);
 	let connection = new azdev.WebApi(core.getInput('ado_organization'), authHandler);
 	let client = await connection.getWorkItemTrackingApi();
 	let workItemSaveResult = null;
 
 	try {
+		console.log('Creating work item');
 		workItemSaveResult = await client.createWorkItem(
 			(customHeaders = []),
 			(document = patchDocument),

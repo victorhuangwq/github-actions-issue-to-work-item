@@ -1,7 +1,6 @@
 const core = require(`@actions/core`);
 const github = require(`@actions/github`);
 const azdev = require(`azure-devops-node-api`);
-const fetch = require(`node-fetch`);
 
 async function main() {
 	const payload = github.context.payload;
@@ -53,49 +52,14 @@ async function formatDescription(githubIssue, githubRepository) {
 	const octokit = new github.GitHub(process.env.github_token);
 	const bodyWithMarkdown = await octokit.markdown.render({ text: githubIssue.body })
 
-	return 'This item was auto-opened from GitHub <a href="' +
+	return '<em>This item was auto-opened from GitHub <a href="' +
 		githubIssue.html_url +
 		'" target="_new">issue #' +
 		githubIssue.number +
-		'</a> created in the <a href="' +
-		githubRepository.html_url +
-		'" target="_new">' +
-		githubRepository.name +
-		"</a>  project</br></br><b>Description from GitHub: </b></br>" +
+		"</a></em><br>" +
+		"It won't auto-update when the GitHub issue changes so please check the issue for updates.<br><br>" +
+		"<strong>Description from GitHub:</strong><br><br>" +
 		bodyWithMarkdown.data;
-}
-
-async function formatHistory(githubIssue, githubRepository) {
-	let history =
-		'GitHub <a href="' +
-		githubIssue.html_url +
-		'" target="_new">issue #' +
-		githubIssue.number +
-		'</a> labeled as ' +
-		core.getInput('label') +
-		' in <a href="' +
-		githubRepository.html_url +
-		'" target="_new">' +
-		githubRepository.full_name +
-		"</a>";
-
-	const commentsUrl = `https://api.github.com/repos/${githubRepository.full_name}/issues/${githubIssue.number}/comments`;
-	const comments = await fetch(commentsUrl)
-		.then((res) => res.json())
-		.catch(err => console.log(err));
-	for (const i in comments) {
-		const comment = comments[i];
-		history +=
-			'</br></br>GitHub <a href="' +
-			comment.html_url +
-			'" target="_new">comment</a> by ' +
-			comment.user.login +
-			' on ' +
-			comment.created_at +
-			':</br>' +
-			comment.body;
-	}
-	return history;
 }
 
 async function create(payload) {
@@ -113,11 +77,6 @@ async function create(payload) {
 		{
 			op: "add",
 			path: "/fields/System.Description",
-			value: botMessage,
-		},
-		{
-			op: "add",
-			path: "/fields/Microsoft.VSTS.TCM.ReproSteps",
 			value: botMessage,
 		},
 		{
@@ -153,14 +112,6 @@ async function create(payload) {
 		op: "add",
 		path: "/fields/System.AreaPath",
 		value: core.getInput('ado_area_path'),
-	});
-
-	// Migrate issue history
-	const history = await formatHistory(payload.issue, payload.repository);
-	patchDocument.push({
-		op: "add",
-		path: "/fields/System.History",
-		value: history,
 	});
 
 	let authHandler = azdev.getPersonalAccessTokenHandler(process.env.ado_token);

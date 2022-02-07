@@ -118,9 +118,10 @@ async function create(payload) {
 	});
 
 	console.log('Connecting to Azure DevOps');
-	let authHandler = azdev.getPersonalAccessTokenHandler(process.env.ado_token);
-	let connection = new azdev.WebApi(core.getInput('ado_organization'), authHandler);
-	let client = await connection.getWorkItemTrackingApi();
+	const orgUrl = "https://dev.azure.com/" + core.getInput('ado_organization');
+	const authHandler = azdev.getPersonalAccessTokenHandler(process.env.ado_token);
+	const connection = new azdev.WebApi(orgUrl, authHandler);
+	const client = await connection.getWorkItemTrackingApi();
 	let workItemSaveResult = null;
 
 	try {
@@ -163,9 +164,9 @@ async function create(payload) {
 async function find(ghIssueNb) {
 	const orgUrl = "https://dev.azure.com/" + core.getInput('ado_organization');
 
-	let authHandler = azdev.getPersonalAccessTokenHandler(process.env.ado_token);
-	let connection = new azdev.WebApi(orgUrl, authHandler);
-	let client = null;
+	const authHandler = azdev.getPersonalAccessTokenHandler(process.env.ado_token);
+	const connection = new azdev.WebApi(orgUrl, authHandler);
+	const client = null;
 	let workItem = null;
 	let queryResult = null;
 

@@ -139,7 +139,7 @@ async function create(payload) {
 		if (workItemSaveResult == null) {
 			workItemSaveResult = -1;
 
-			console.log("Error: creatWorkItem failed");
+			console.log("Error: createWorkItem failed");
 			console.log(`WIT may not be correct: ${wit}`);
 			core.setFailed();
 		} else {
@@ -148,7 +148,7 @@ async function create(payload) {
 	} catch (error) {
 		workItemSaveResult = -1;
 
-		console.log("Error: creatWorkItem failed");
+		console.log("Error: createWorkItem failed");
 		console.log(patchDocument);
 		console.log(error);
 		core.setFailed(error);
@@ -170,7 +170,7 @@ async function find(ghIssueNb) {
 	let workItem = null;
 	let queryResult = null;
 
-	console.log("Finding workitem");
+	console.log("Finding work item in organization " + orgUrl);
 	try {
 		client = await connection.getWorkItemTrackingApi();
 	} catch (error) {

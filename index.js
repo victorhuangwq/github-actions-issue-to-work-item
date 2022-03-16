@@ -69,7 +69,7 @@ async function formatDescription(githubIssue) {
 		githubIssue.number +
 		"</a></em><br>" +
 		"It won't auto-update when the GitHub issue changes so please check the issue for updates.<br><br>" +
-		"<strong>Description from GitHub:</strong><br><br>" +
+		"<strong>Initial description from GitHub (check issue for more info):</strong><br><br>" +
 		bodyWithMarkdown.data;
 }
 

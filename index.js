@@ -27,21 +27,21 @@ async function main() {
 		// go check to see if work item already exists in azure devops or not
 		// based on the title and tags.
 		console.log("Check to see if work item already exists");
-		let workItem = await find(payload.issue.number, adoClient);
-		if (workItem === null) {
+		let adoId = await findAdoId(payload.issue.number, adoClient);
+		if (adoId === null) {
 			console.log("Could not find existing ADO workitem, creating one now");
 		} else {
-			console.log("Found existing ADO workitem: " + workItem.id + ". No need to create a new one");
+			console.log("Found existing ADO workitem: " + adoId + ". No need to create a new one");
 			return;
 		}
 
 		// if workItem == -1 then we have an error during find
-		if (workItem === -1) {
+		if (adoId === -1) {
 			core.setFailed("Error while finding the ADO work item");
 			return;
 		}
 
-		workItem = await create(payload, adoClient);
+		let workItem = await create(payload, adoClient);
 
 		// set output message
 		if (workItem != null || workItem != undefined) {
@@ -63,7 +63,8 @@ async function formatDescription(githubIssue) {
 	const octokit = new github.GitHub(process.env.github_token);
 	const bodyWithMarkdown = await octokit.markdown.render({ text: githubIssue.body });
 
-	return '<em>This item was auto-opened from GitHub <a href="' +
+	return '________________________________________________________<br>' +
+		'<em>This item was auto-opened from GitHub <a href="' +
 		githubIssue.html_url +
 		'" target="_new">issue #' +
 		githubIssue.number +
@@ -77,7 +78,7 @@ async function create(payload, adoClient) {
 	const botMessage = await formatDescription(payload.issue);
 	const shortRepoName = payload.repository.full_name.split("/")[1];
 	const tags = core.getInput("ado_tags") ? core.getInput("ado_tags") + ";" + shortRepoName : shortRepoName;
-	const isFeature = payload.issue.labels.some((label) => label === 'enhancement' || label === 'feature');
+	const isFeature = payload.issue.labels.some((label) => label === 'enhancement' || label === 'feature' || label == 'feature request');
 
 	console.log(`Starting to create work item for GitHub issue #${payload.issue.number}`);
 
@@ -174,14 +175,14 @@ async function create(payload, adoClient) {
 	return workItemSaveResult;
 }
 
-async function find(ghIssueNb, adoClient) {
-	console.log('Connecting to Azure DevOps to find work item for issue #' + ghIssueNb);
+async function findAdoId(ghIssueId, adoClient) {
+	console.log('Connecting to Azure DevOps to find work item for issue #' + ghIssueId);
 
 	const wiql = {
 		query:
 			`SELECT [System.Id], [System.WorkItemType], [System.Description], [System.Title], [System.AssignedTo], [System.State], [System.Tags]
 			FROM workitems 
-			WHERE [System.TeamProject] = @project AND [System.Title] CONTAINS '[GitHub #${ghIssueNb}]' AND [System.AreaPath] = '${core.getInput('ado_area_path')}'`
+			WHERE [System.TeamProject] = @project AND [System.Title] CONTAINS '[GitHub #${ghIssueId}]' AND [System.AreaPath] = '${core.getInput('ado_area_path')}'`
 	};
 	console.log("ADO query: " + wiql.query);
 
@@ -207,9 +208,8 @@ async function find(ghIssueNb, adoClient) {
 
 	if (workItem != null) {
 		try {
-			var result = await client.getWorkItem(workItem.id, null, null, 4);
 			console.log("Workitem data retrieved: " + workItem.id);
-			return result;
+			return workItem.id;
 		} catch (error) {
 			console.log("Error: getWorkItem failure");
 			core.setFailed(error);

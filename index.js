@@ -5,7 +5,7 @@ const azdev = require(`azure-devops-node-api`);
 async function main() {
 	const payload = github.context.payload;
 
-	console.log("Running ADO Creation workflow for payload: " + JSON.stringify(payload));
+	//console.log("Running ADO Creation workflow for payload: " + JSON.stringify(payload));
 
 	// If not the correct labelling, quit
 	if (payload.action !== 'labeled' || payload.label.name !== core.getInput('label')) {
@@ -80,7 +80,7 @@ async function formatDescription(payload) {
 	console.log('Creating a description based on the github issue');
 	const octokit = new github.GitHub(process.env.github_token);
 	const bodyWithMarkdown = await octokit.markdown.render({
-		text: githubIssue.body,
+		text: payload.issue.body,
 		mode: 'gfm',
 		context: payload.repository.full_name
 	});

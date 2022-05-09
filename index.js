@@ -55,7 +55,7 @@ async function main() {
 
 			// Update the GitHub issue body with the workitem id
 			if (adoIdFromIssue == -1) {
-				//updateIssueBody(payload, workItem.id);
+				updateIssueBody(payload, workItem.id);
 			}
 
 			// Set output message
@@ -260,15 +260,15 @@ async function updateIssueBody(payload, adoId) {
 
 	const octokit = new github.GitHub(process.env.github_token);
 	
-	issueBody = issueBody + "\r\n\r\nAB#" + adoId;
+	let issueBody = payload.issue.body + "\r\n\r\nAB#" + adoId;
 
 	console.log("Adding 'AB#<id>' link to the issue body");
 	try {
 		var result = await octokit.issues.update({
-			owner: vm.owner,
-			repo: vm.repository,
-			issue_number: vm.number,
-			body: vm.body,
+			owner: payload.repository.owner.login,
+			repo: payload.repository.name,
+			issue_number: payload.issue.number,
+			body: issueBody,
 		});
 
 		return result;

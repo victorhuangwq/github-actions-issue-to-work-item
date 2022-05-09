@@ -89,7 +89,7 @@ async function formatDescription(payload) {
 		'<em>This item was auto-opened from GitHub <a href="' +
 		payload.issue.html_url +
 		'" target="_new">issue #' +
-		githubIssue.number +
+		payload.issue.number +
 		"</a></em><br>" +
 		"It won't auto-update when the GitHub issue changes so please check the issue for updates.<br><br>" +
 		"<strong>Initial description from GitHub (check issue for more info):</strong><br><br>" +
@@ -97,7 +97,7 @@ async function formatDescription(payload) {
 }
 
 async function create(payload, adoClient) {
-	const botMessage = await formatDescription(payload.issue);
+	const botMessage = await formatDescription(payload);
 	const shortRepoName = payload.repository.full_name.split("/")[1];
 	const tags = core.getInput("ado_tags") ? core.getInput("ado_tags") + ";" + shortRepoName : shortRepoName;
 	const isFeature = payload.issue.labels.some((label) => label === 'enhancement' || label === 'feature' || label == 'feature request');

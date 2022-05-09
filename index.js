@@ -43,6 +43,11 @@ async function main() {
 			console.log("Could not find existing ADO workitem, creating one now");
 		} else {
 			console.log("Found existing ADO workitem: " + adoId + ". No need to create a new one");
+			
+			// Update the GitHub issue body with the workitem id if it wasn't already there
+			if (adoIdFromIssue == -1) {
+				updateIssueBody(payload, adoId);
+			}
 			return;
 		}
 

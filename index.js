@@ -76,14 +76,18 @@ function formatTitle(githubIssue) {
 	return "[GitHub #" + githubIssue.number + "] " + githubIssue.title;
 }
 
-async function formatDescription(githubIssue) {
+async function formatDescription(payload) {
 	console.log('Creating a description based on the github issue');
 	const octokit = new github.GitHub(process.env.github_token);
-	const bodyWithMarkdown = await octokit.markdown.render({ text: githubIssue.body });
+	const bodyWithMarkdown = await octokit.markdown.render({
+		text: githubIssue.body,
+		mode: 'gfm',
+		context: payload.repository.full_name
+	});
 
 	return '________________________________________________________<br>' +
 		'<em>This item was auto-opened from GitHub <a href="' +
-		githubIssue.html_url +
+		payload.issue.html_url +
 		'" target="_new">issue #' +
 		githubIssue.number +
 		"</a></em><br>" +

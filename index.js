@@ -182,7 +182,7 @@ async function findAdoId(ghIssueId, adoClient) {
 		query:
 			`SELECT [System.Id], [System.WorkItemType], [System.Description], [System.Title], [System.AssignedTo], [System.State], [System.Tags]
 			FROM workitems 
-			WHERE [System.TeamProject] = @project AND [System.Title] CONTAINS '[GitHub #${ghIssueId}]' AND [System.AreaPath] = '${core.getInput('ado_area_path')}'`
+			WHERE [System.TeamProject] = @project AND [System.Title] CONTAINS 'GitHub #' AND [System.Title] CONTAINS '${ghIssueId}' AND [System.AreaPath] = '${core.getInput('ado_area_path')}'`
 	};
 	console.log("ADO query: " + wiql.query);
 
@@ -202,6 +202,7 @@ async function findAdoId(ghIssueId, adoClient) {
 		core.setFailed(error);
 		return -1;
 	}
+	console.log(queryResult);
 
 	console.log("Use the first item found");
 	const workItem = queryResult.workItems.length > 0 ? queryResult.workItems[0] : null;

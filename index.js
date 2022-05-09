@@ -5,7 +5,7 @@ const azdev = require(`azure-devops-node-api`);
 async function main() {
 	const payload = github.context.payload;
 
-	console.log("Running ADO Creation workflow for payload: " + payload);
+	console.log("Running ADO Creation workflow for payload: " + JSON.stringify(payload));
 
 	// If not the correct labelling, quit
 	if (payload.action !== 'labeled' || payload.label.name !== core.getInput('label')) {
@@ -14,7 +14,7 @@ async function main() {
 	}
 
 	// Look for existing ADO id in issue body
-	let adoIdFromIssue = findAdoIdFromIssue(payload.issue.body);
+	let adoIdFromIssue = await findAdoIdFromIssue(payload.issue.body);
 	if (adoIdFromIssue != -1) {
 		console.log("Found existing ADO id in GitHub issue body: " + adoIdFromIssue);
 		console.log("Won't try to create a new item.");

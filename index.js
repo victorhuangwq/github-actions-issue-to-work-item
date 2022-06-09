@@ -9,20 +9,20 @@ async function main() {
 
 	// If not the correct labelling, quit
 	if (payload.action === 'labeled') {
-		handleLabeled(payload);
+		await handleLabeled(payload);
 	} else if (payload.action === 'issue') {
-		handleIssue(payload);
+		await handleIssue(payload);
 	} else {
 		console.log(`Action was not expected for payload.action = ${payload.action}. Nothing to do. Exiting.`);
 		return;
 	}
 }
 
-function handleIssue(payload) {
+async function handleIssue(payload) {
 	//if (payload.issue.state)
 }
 
-function handleLabeled(payload) {
+async function handleLabeled(payload) {
 	// We will only handle labeled events if the label matches the 'label' input filter.
 	if (payload.label.name !== core.getInput('label')) {
 		console.log(`Action was 'labeled' but label was not in filter = ${core.getInput('label')}. Nothing to do.`);

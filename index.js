@@ -5,11 +5,27 @@ const azdev = require(`azure-devops-node-api`);
 async function main() {
 	const payload = github.context.payload;
 
-	//console.log("Running ADO Creation workflow for payload: " + JSON.stringify(payload));
+	console.log("Running ADO Creation workflow for payload: " + JSON.stringify(payload));
 
 	// If not the correct labelling, quit
-	if (payload.action !== 'labeled' || payload.label.name !== core.getInput('label')) {
-		console.log(`Either action was not 'labeled'or label was not ${core.getInput('label')}. Nothing to do.`);
+	if (payload.action === 'labeled') {
+		handleLabeled(payload);
+	} else if (payload.action === 'issue') {
+		handleIssue(payload);
+	} else {
+		console.log(`Action was not expected for payload.action = ${payload.action}. Nothing to do. Exiting.`);
+		return;
+	}
+}
+
+function handleIssue(payload) {
+	//if (payload.issue.state)
+}
+
+function handleLabeled(payload) {
+	// We will only handle labeled events if the label matches the 'label' input filter.
+	if (payload.label.name !== core.getInput('label')) {
+		console.log(`Action was 'labeled' but label was not in filter = ${core.getInput('label')}. Nothing to do.`);
 		return;
 	}
 

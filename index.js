@@ -115,8 +115,16 @@ async function formatDescription(payload) {
 async function create(payload, adoClient) {
 	const botMessage = await formatDescription(payload);
 	const shortRepoName = payload.repository.full_name.split("/")[1];
-	const tags = core.getInput("ado_tags") ? core.getInput("ado_tags") + ";" + shortRepoName : shortRepoName;
+	let tags = core.getInput("ado_tags") ? core.getInput("ado_tags") + ";" + shortRepoName : shortRepoName;
 	const isFeature = payload.issue.labels.some((label) => label.name === 'enhancement' || label.name === 'feature' || label.name === 'feature request');
+	
+	// If this was tagged as a privacy issue, add the "WV2_Privacy" tag and mark it as a Priority 0 bug.
+	const isPrivacy = payload.issue.labels.some((label) => label.name === 'privacy');
+	let priority = null;
+	if (isPrivacy) {
+		tags += ";WV2_Privacy";
+		priority = 0;
+	}
 
 	console.log(`Starting to create work item for GitHub issue #${payload.issue.number}`);
 
@@ -165,6 +173,14 @@ async function create(payload, adoClient) {
 					comment: ""
 				}
 			}
+		});
+	}
+
+	if (priority != null) {
+		patchDocument.push({
+			op: "add",
+			path: "/fields/Microsoft.VSTS.Common.Priority",
+			value: priority,
 		});
 	}
 

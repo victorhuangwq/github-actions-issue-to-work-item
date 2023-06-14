@@ -117,12 +117,22 @@ async function create(payload, adoClient) {
 	const shortRepoName = payload.repository.full_name.split("/")[1];
 	let tags = core.getInput("ado_tags") ? core.getInput("ado_tags") + ";" + shortRepoName : shortRepoName;
 	const isFeature = payload.issue.labels.some((label) => label.name === 'enhancement' || label.name === 'feature' || label.name === 'feature request');
+	let title = payload.issue;
+	let priority = null;
 	
 	// If this was tagged as a privacy issue, add the "WV2_Privacy" tag and mark it as a Priority 0 bug.
 	const isPrivacy = payload.issue.labels.some((label) => label.name === 'privacy');
-	let priority = null;
 	if (isPrivacy) {
 		tags += ";WV2_Privacy";
+		title = "[Privacy] " + title;
+		priority = 0;
+	}
+
+	// If this was tagged as a regression issue, add the "WV2_Regression" tag and mark it as a Priority 0 bug.
+	const isRegression = payload.issue.labels.some((label) => label.name === 'regression');
+	if (isPrivacy) {
+		tags += ";WV2_Regression";
+		title = "[Regression] " + title;
 		priority = 0;
 	}
 
@@ -132,7 +142,7 @@ async function create(payload, adoClient) {
 		{
 			op: "add",
 			path: "/fields/System.Title",
-			value: formatTitle(payload.issue),
+			value: formatTitle(title),
 		},
 		{
 			op: "add",

@@ -124,7 +124,7 @@ async function create(payload, adoClient) {
 	const isPrivacy = payload.issue.labels.some((label) => label.name === 'privacy');
 	if (isPrivacy) {
 		tags += ";WV2_Privacy";
-		title = "[Privacy] " + title;
+		title = "[Privacy]" + title;
 		priority = 0;
 	}
 
@@ -132,7 +132,7 @@ async function create(payload, adoClient) {
 	const isRegression = payload.issue.labels.some((label) => label.name === 'regression');
 	if (isRegression) {
 		tags += ";WV2_Regression";
-		title = "[Regression] " + title;
+		title = "[Regression]" + title;
 		priority = 0;
 	}
 

@@ -130,7 +130,7 @@ async function create(payload, adoClient) {
 
 	// If this was tagged as a regression issue, add the "WV2_Regression" tag and mark it as a Priority 0 bug.
 	const isRegression = payload.issue.labels.some((label) => label.name === 'regression');
-	if (isPrivacy) {
+	if (isRegression) {
 		tags += ";WV2_Regression";
 		title = "[Regression] " + title;
 		priority = 0;

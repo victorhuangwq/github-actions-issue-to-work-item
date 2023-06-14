@@ -117,7 +117,7 @@ async function create(payload, adoClient) {
 	const shortRepoName = payload.repository.full_name.split("/")[1];
 	let tags = core.getInput("ado_tags") ? core.getInput("ado_tags") + ";" + shortRepoName : shortRepoName;
 	const isFeature = payload.issue.labels.some((label) => label.name === 'enhancement' || label.name === 'feature' || label.name === 'feature request');
-	let title = payload.issue;
+	let title = formatTitle(payload.issue);
 	let priority = null;
 	
 	// If this was tagged as a privacy issue, add the "WV2_Privacy" tag and mark it as a Priority 0 bug.
@@ -142,7 +142,7 @@ async function create(payload, adoClient) {
 		{
 			op: "add",
 			path: "/fields/System.Title",
-			value: formatTitle(title),
+			value: title,
 		},
 		{
 			op: "add",

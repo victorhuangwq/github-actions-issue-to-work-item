@@ -48,9 +48,12 @@ async function handleIssue(payload) {
 		tags = tags.replace(closed_tag, '');
 	} else if (payload.action === 'closed') {
 		// Add the 'WV2_Closed' tag
-		console.log("Issue was closed. Adding the " + closed_tag + " tag.");
 		if (!tags.includes(closed_tag)) {
+			console.log("Issue was closed. Adding the " + closed_tag + " tag.");
 			tags = tags + ';' + closed_tag;
+		} else {
+			console.log("Issue was closed, but the " + closed_tag + " tag was already present. Nothing to do.");
+			return;
 		}
 	} else {
 		console.log(`Action was not expected for payload.action = ${payload.action}. Nothing to do. Exiting.`);

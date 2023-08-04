@@ -19,7 +19,58 @@ async function main() {
 }
 
 async function handleIssue(payload) {
-	//if (payload.issue.state)
+
+	let adoClient = await connectToAdo();
+	if (!adoClient) { return; }
+
+	let adoIdFromIssue = await findAdoIdFromIssue(payload.issue.body);
+	if (adoIdFromIssue == -1) {
+		console.log("No corresponding ADO id found in GitHub issue body.");
+		console.log("Exiting.");
+		return;
+	}
+
+	let adoWorkItem = await adoClient.getWorkItem(adoIdFromIssue);
+	if (!adoWorkItem) {
+		console.log("Couldn't get ADO work item with id: " + adoIdFromIssue);
+		core.setFailed();
+		return;
+	}
+
+	// Get the current tags from the work item
+	let tags = adoWorkItem.fields["System.Tags"];
+
+	if (payload.issue.state == 'closed') {
+		// Remove the 'WV2_Closed' tag
+		tags = tags.replace('WV2_Closed', '');
+	} else if (payload.issue.state == 'open') {
+		// Add the 'WV2_Closed' tag
+		if (!tags.includes('WV2_Closed')) {
+			tags = tags + ';WV2_Closed';
+		}
+	}
+
+	const patchDocument = [
+		{
+			op: "add", // 'add' patch operation on an existing work item field replaces the value
+			path: "/fields/System.Tags",
+			value: tags,
+		}
+	];
+
+	console.log("Updating tags on ADO work item with tags: " + tags);
+	let updateResult = await adoClient.updateWorkItem(
+		(customHeaders = []),
+		(document = patchDocument),
+		(project = core.getInput('ado_project')),
+		(validateOnly = false),
+		(bypassRules = false)
+	);
+	if (!updateResult) {
+		console.log("Couldn't update ADO work item with id: " + adoIdFromIssue);
+		core.setFailed();
+		return;
+	}
 }
 
 async function handleLabeled(payload) {
@@ -37,19 +88,8 @@ async function handleLabeled(payload) {
 		return;
 	}
 
-	let adoClient = null;
-
-	// Connect to ADO
-	try {
-		const orgUrl = "https://dev.azure.com/" + core.getInput('ado_organization');
-		const adoAuthHandler = azdev.getPersonalAccessTokenHandler(process.env.ado_token);
-		const adoConnection = new azdev.WebApi(orgUrl, adoAuthHandler);
-		adoClient = await adoConnection.getWorkItemTrackingApi();
-	} catch (e) {
-		console.error(e);
-		core.setFailed('Could not connect to ADO');
-		return;
-	}
+	let adoClient = await connectToAdo();
+	if (!adoClient) { return; }
 
 	try {
 		// Search for an existing ADO item with "GitHub #<id>" in the title
@@ -86,6 +126,23 @@ async function handleLabeled(payload) {
 		console.log("Error: " + error);
 		core.setFailed();
 	}
+}
+
+async function connectToAdo() {
+	let adoClient = null;
+
+	// Connect to ADO
+	try {
+		const orgUrl = "https://dev.azure.com/" + core.getInput('ado_organization');
+		const adoAuthHandler = azdev.getPersonalAccessTokenHandler(process.env.ado_token);
+		const adoConnection = new azdev.WebApi(orgUrl, adoAuthHandler);
+		adoClient = await adoConnection.getWorkItemTrackingApi();
+	} catch (e) {
+		console.error(e);
+		core.setFailed('Could not connect to ADO');
+		return null;
+	}
+	return adoClient;
 }
 
 function formatTitle(githubIssue) {

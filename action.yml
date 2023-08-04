@@ -17,6 +17,9 @@ inputs:
   ado_tags:
     description: 'A list of tags to add to the newly created work item, separated by semi-colon (;)'
     required: false
+  ado_gh_closed_tag: 
+    description: 'The name of the tag to add/remove on work items to indicate whether the corresponding GitHub issue is closed. Defaults to "GitHub_Closed"'
+    required: false
   parent_work_item:
     description: 'The number of a work item to use as a parent for the newly created work item'
     required: false

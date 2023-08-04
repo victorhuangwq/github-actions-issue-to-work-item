@@ -10,7 +10,7 @@ async function main() {
 	// If not the correct labelling, quit
 	if (payload.action === 'labeled') {
 		await handleLabeled(payload);
-	} else if (payload.action === 'issue') {
+	} else if (payload.action === 'closed' || payload.action === 'reopened') {
 		await handleIssue(payload);
 	} else {
 		console.log(`Action was not expected for payload.action = ${payload.action}. Nothing to do. Exiting.`);
@@ -41,10 +41,10 @@ async function handleIssue(payload) {
 	let tags = adoWorkItem.fields["System.Tags"];
 	let closed_tag = core.getInput("ado_gh_closed_tag") ? core.getInput("ado_gh_closed_tag") : "GitHub_Closed";
 
-	if (payload.issue.state == 'closed') {
+	if (payload.action === 'closed') {
 		// Remove the 'WV2_Closed' tag
 		tags = tags.replace(closed_tag, '');
-	} else if (payload.issue.state == 'open') {
+	} else if (payload.action === 'reopened') {
 		// Add the 'WV2_Closed' tag
 		if (!tags.includes(closed_tag)) {
 			tags = tags + ';' + closed_tag;

@@ -63,7 +63,7 @@ async function handleIssue(payload) {
 
 	const patchDocument = [
 		{
-			op: "add", // 'add' patch operation on an existing work item field replaces the value
+			op: "replace", // 'add' patch operation on an existing work item field replaces the value
 			path: "/fields/System.Tags",
 			value: tags,
 		}

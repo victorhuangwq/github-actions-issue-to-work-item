@@ -40,15 +40,22 @@ async function handleIssue(payload) {
 	// Get the current tags from the work item
 	let tags = adoWorkItem.fields["System.Tags"];
 	let closed_tag = core.getInput("ado_gh_closed_tag") ? core.getInput("ado_gh_closed_tag") : "GitHub_Closed";
+	console.log("Closed tag: " + closed_tag);
 
-	if (payload.action === 'closed') {
+	if (payload.action === 'reopened') {
 		// Remove the 'WV2_Closed' tag
+		console.log("Issue was reopened. Removing the " + closed_tag + " tag.");
 		tags = tags.replace(closed_tag, '');
-	} else if (payload.action === 'reopened') {
+	} else if (payload.action === 'closed') {
 		// Add the 'WV2_Closed' tag
+		console.log("Issue was closed. Adding the " + closed_tag + " tag.");
 		if (!tags.includes(closed_tag)) {
 			tags = tags + ';' + closed_tag;
 		}
+	} else {
+		console.log(`Action was not expected for payload.action = ${payload.action}. Nothing to do. Exiting.`);
+		core.setFailed();
+		return;
 	}
 
 	const patchDocument = [

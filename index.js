@@ -63,7 +63,7 @@ async function handleIssue(payload) {
 
 	const patchDocument = [
 		{
-			op: "replace", // 'add' patch operation on an existing work item field replaces the value
+			op: "add", // 'add' patch operation on an existing work item field replaces the value
 			path: "/fields/System.Tags",
 			value: tags,
 		}
@@ -73,6 +73,7 @@ async function handleIssue(payload) {
 	let updateResult = await adoClient.updateWorkItem(
 		(customHeaders = []),
 		(document = patchDocument),
+		(id = adoIdFromIssue),
 		(project = core.getInput('ado_project')),
 		(validateOnly = false),
 		(bypassRules = false)

@@ -39,14 +39,15 @@ async function handleIssue(payload) {
 
 	// Get the current tags from the work item
 	let tags = adoWorkItem.fields["System.Tags"];
+	let closed_tag = core.getInput("ado_gh_closed_tag") ? core.getInput("ado_gh_closed_tag") : "GitHub_Closed";
 
 	if (payload.issue.state == 'closed') {
 		// Remove the 'WV2_Closed' tag
-		tags = tags.replace('WV2_Closed', '');
+		tags = tags.replace(closed_tag, '');
 	} else if (payload.issue.state == 'open') {
 		// Add the 'WV2_Closed' tag
-		if (!tags.includes('WV2_Closed')) {
-			tags = tags + ';WV2_Closed';
+		if (!tags.includes(closed_tag)) {
+			tags = tags + ';' + closed_tag;
 		}
 	}
 

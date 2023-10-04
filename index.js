@@ -28,6 +28,8 @@ async function handleIssue(payload) {
 		console.log("No corresponding ADO id found in GitHub issue body.");
 		console.log("Exiting.");
 		return;
+	} else {
+		console.log("Found existing ADO id in GitHub issue body: " + adoIdFromIssue);
 	}
 
 	let adoWorkItem = await adoClient.getWorkItem(adoIdFromIssue);
@@ -38,8 +40,8 @@ async function handleIssue(payload) {
 	}
 
 	// Get the current tags from the work item
-	let tags = adoWorkItem.fields["System.Tags"];
-	let closed_tag = core.getInput("ado_gh_closed_tag") ? core.getInput("ado_gh_closed_tag") : "GitHub_Closed";
+	let tags = adoWorkItem.fields["System.Tags"] ?? [];
+	let closed_tag = core.getInput("ado_gh_closed_tag") ?? "GitHub_Closed";
 	console.log("Closed tag: " + closed_tag);
 
 	if (payload.action === 'reopened') {

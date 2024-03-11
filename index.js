@@ -164,13 +164,19 @@ function formatTitle(githubIssue) {
 }
 
 async function formatDescription(payload) {
+
 	console.log('Creating a description based on the github issue');
 	const octokit = new github.GitHub(process.env.github_token);
+
 	const bodyWithMarkdown = await octokit.markdown.render({
 		text: payload.issue.body,
 		mode: 'gfm',
 		context: payload.repository.full_name
 	});
+
+	// Remove potential tokens found in the issue or PR body to avoid errors when creating work items.
+	console.log('Removing potential tokens');
+	const safeBody = bodyWithMarkdown.data.replace(/\?jwt=[^"]+/g, "");
 
 	return '________________________________________________________<br>' +
 		'<em>This item was auto-opened from GitHub <a href="' +
@@ -180,7 +186,7 @@ async function formatDescription(payload) {
 		"</a></em><br>" +
 		"It won't auto-update when the GitHub issue changes so please check the issue for updates.<br><br>" +
 		"<strong>Initial description from GitHub (check issue for more info):</strong><br><br>" +
-		bodyWithMarkdown.data;
+		safeBody;
 }
 
 async function create(payload, adoClient) {
